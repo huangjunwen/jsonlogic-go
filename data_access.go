@@ -56,7 +56,7 @@ func opVar(apply Applier, params []interface{}, data interface{}) (res interface
 
 	default:
 		// XXX: This is different with jsonlogic-js
-		return nil, fmt.Errorf("Op var: param should be null/number/string but got %T", keyObj)
+		return nil, fmt.Errorf("var: param should be null/number/string but got %T", keyObj)
 	}
 
 	res = data

@@ -14,9 +14,12 @@ type Operation func(apply Applier, params []interface{}, data interface{}) (inte
 
 func NewJSONLogic() *JSONLogic {
 	ret := NewEmptyJSONLogic()
+	// Data access.
 	AddOpVar(ret)
 	AddOpMissing(ret)
 	AddOpMissingSome(ret)
+	// Logic.
+	AddOpIf(ret)
 	return ret
 }
 
