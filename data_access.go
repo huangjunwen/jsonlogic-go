@@ -12,6 +12,7 @@ func AddOpVar(jl *JSONLogic) {
 }
 
 func opVar(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+
 	var (
 		keyObj interface{}
 		defObj interface{}
@@ -78,4 +79,64 @@ func opVar(apply Applier, params []interface{}, data interface{}) (res interface
 		return defObj, nil
 	}
 	return res, nil
+
+}
+
+// AddOpMissing adds "missing" operation to the JSONLogic instance.
+func AddOpMissing(jl *JSONLogic) {
+	jl.AddOperation("missing", opMissing)
+}
+
+func opMissing(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+
+	keys, ok := params[0].([]interface{})
+	if !ok {
+		keys = params
+	}
+
+	missing := []interface{}{}
+	for _, key := range keys {
+		res, err := opVar(apply, []interface{}{key}, data)
+		if err != nil {
+			return nil, err
+		}
+		if res == nil || res == "" {
+			missing = append(missing, key)
+		}
+	}
+	return missing, nil
+
+}
+
+// AddOpMissingSome adds "missing_some" operation to the JSONLogic instance.
+func AddOpMissingSome(jl *JSONLogic) {
+	jl.AddOperation("missing_some", opMissingSome)
+}
+
+func opMissingSome(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+
+	if len(params) != 2 {
+		return nil, fmt.Errorf("missing_some: expect 2 params")
+	}
+	needed, ok := params[0].(float64)
+	if !ok {
+		return nil, fmt.Errorf("missing_some: expect number for param 0 but got %T", params[0])
+	}
+	keys, ok := params[1].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("missing_some: expect array for param 1 but got %T", params[1])
+	}
+
+	missing, err := opMissing(apply, keys, data)
+	if err != nil {
+		return nil, err
+	}
+
+	missingArr := missing.([]interface{})
+	if len(keys)-len(missingArr) >= int(needed) {
+		return []interface{}{}, nil
+	} else {
+		return missingArr, nil
+	}
+
 }

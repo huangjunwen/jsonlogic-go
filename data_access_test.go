@@ -1,8 +1,6 @@
 package jsonlogic
 
 import (
-	"encoding/json"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,24 +8,19 @@ import (
 
 func TestOpVar(t *testing.T) {
 	assert := assert.New(t)
-	mustUnmarshal := func(src string, target interface{}) {
-		if err := json.NewDecoder(strings.NewReader(src)).Decode(target); err != nil {
-			panic(err)
-		}
-	}
 	jl := NewEmptyJSONLogic()
 	AddOpVar(jl)
-
-	for i, testCase := range []struct {
-		Logic  string
-		Data   string
-		Result interface{}
-	}{
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html#var
+		{Logic: `{"var":["a"]}`, Data: `{"a":1,"b":2}`, Result: float64(1)},
+		{Logic: `{"var":"a"}`, Data: `{"a":1,"b":2}`, Result: float64(1)},
+		{Logic: `{"var":["z",26]}`, Data: `{"a":1,"b":2}`, Result: float64(26)},
+		{Logic: `{"var":"champ.name"}`, Data: `{"champ":{"name":"Fezzig","height":223},"challenger":{"name":"DreadPirateRoberts","height":183}}`, Result: "Fezzig"},
+		{Logic: `{"var":1}`, Data: `["zero", "one", "two"]`, Result: "one"},
+		{Logic: `{"var":""}`, Data: `"Dolly"`, Result: "Dolly"},
 		// null or "" returns whole data.
 		{Logic: `{"var":null}`, Data: `{"a":"b"}`, Result: map[string]interface{}{"a": "b"}},
-		{Logic: `{"var":[null]}`, Data: `{"a":"b"}`, Result: map[string]interface{}{"a": "b"}},
 		{Logic: `{"var":""}`, Data: `{"a":"b"}`, Result: map[string]interface{}{"a": "b"}},
-		{Logic: `{"var":[""]}`, Data: `{"a":"b"}`, Result: map[string]interface{}{"a": "b"}},
 		// String key and map.
 		{Logic: `{"var":"a"}`, Data: `{"c":"d"}`, Result: nil},
 		{Logic: `{"var":"a"}`, Data: `{"a":"b"}`, Result: "b"},
@@ -58,15 +51,34 @@ func TestOpVar(t *testing.T) {
 		{Logic: `{"var":{"var":"pointer"}}`, Data: `{"pointer":"x","x":1.1}`, Result: float64(1.1)},
 		// Default.
 		{Logic: `{"var":["a",["def"]]}`, Data: `{"c":"d"}`, Result: []interface{}{"def"}},
-	} {
-		var (
-			logic, data, result interface{}
-		)
-		mustUnmarshal(testCase.Logic, &logic)
-		mustUnmarshal(testCase.Data, &data)
+	})
 
-		result, err := jl.Apply(logic, data)
-		assert.NoError(err, "test case %d", i)
-		assert.Equal(testCase.Result, result, "test case %d", i)
-	}
+}
+
+func TestOpMissing(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmptyJSONLogic()
+	AddOpMissing(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html#missing
+		{Logic: `{"missing":["a","b"]}`, Data: `{"a":"apple","c":"carrot"}`, Result: []interface{}{"b"}},
+		{Logic: `{"missing":["a","b"]}`, Data: `{"a":"apple", "b":"banana"}`, Result: []interface{}{}},
+		// null or "" are treated as  missing
+		{Logic: `{"missing":"a"}`, Data: `{"a":null}`, Result: []interface{}{"a"}},
+		{Logic: `{"missing":"a"}`, Data: `{"a":""}`, Result: []interface{}{"a"}},
+		{Logic: `{"missing":"a"}`, Data: `{"a":[]}`, Result: []interface{}{}},
+		{Logic: `{"missing":"a"}`, Data: `{"a":{}}`, Result: []interface{}{}},
+		{Logic: `{"missing":"a"}`, Data: `{"a":false}`, Result: []interface{}{}},
+	})
+}
+
+func TestOpMissingSome(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmptyJSONLogic()
+	AddOpMissingSome(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html#missing_some
+		{Logic: `{"missing_some":[1,["a","b","c"]]}`, Data: `{"a":"apple"}`, Result: []interface{}{}},
+		{Logic: `{"missing_some":[2,["a","b","c"]]}`, Data: `{"a":"apple"}`, Result: []interface{}{"b", "c"}},
+	})
 }
