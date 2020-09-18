@@ -18,6 +18,11 @@ func TestOpVar(t *testing.T) {
 		{Logic: `{"var":"champ.name"}`, Data: `{"champ":{"name":"Fezzig","height":223},"challenger":{"name":"DreadPirateRoberts","height":183}}`, Result: "Fezzig"},
 		{Logic: `{"var":1}`, Data: `["zero", "one", "two"]`, Result: "one"},
 		{Logic: `{"var":""}`, Data: `"Dolly"`, Result: "Dolly"},
+		// Default.
+		{Logic: `{"var":["a",["def"]]}`, Data: `{"c":"d"}`, Result: []interface{}{"def"}},
+		// Using logic in key/default.
+		{Logic: `{"var":["a",{"var":"a_default"}]}`, Data: `{"c":"d","a_default":"aaa"}`, Result: "aaa"},
+		{Logic: `{"var":{"var":"pointer"}}`, Data: `{"pointer":"x","x":1.1}`, Result: float64(1.1)},
 		// null or "" returns whole data.
 		{Logic: `{"var":null}`, Data: `{"a":"b"}`, Result: map[string]interface{}{"a": "b"}},
 		{Logic: `{"var":""}`, Data: `{"a":"b"}`, Result: map[string]interface{}{"a": "b"}},
@@ -48,9 +53,6 @@ func TestOpVar(t *testing.T) {
 		// Mix.
 		{Logic: `{"var":"1.a"}`, Data: `["a",{"a":"b"}]`, Result: "b"},
 		{Logic: `{"var":"a.0"}`, Data: `{"a":[8,9,10]}`, Result: float64(8)},
-		{Logic: `{"var":{"var":"pointer"}}`, Data: `{"pointer":"x","x":1.1}`, Result: float64(1.1)},
-		// Default.
-		{Logic: `{"var":["a",["def"]]}`, Data: `{"c":"d"}`, Result: []interface{}{"def"}},
 	})
 
 }
