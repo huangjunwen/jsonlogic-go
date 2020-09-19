@@ -95,6 +95,7 @@ func TestOpAdd(t *testing.T) {
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		{Logic: `{"+":[]}`, Data: `null`, Result: float64(0)},
 		{Logic: `{"+":["a"]}`, Data: `null`, Err: true},
+		{Logic: `{"+":["1"]}`, Data: `null`, Result: float64(1)},
 		{Logic: `{"+":[1,"-2",33]}`, Data: `null`, Result: float64(32)},
 	})
 }
@@ -106,6 +107,7 @@ func TestOpMul(t *testing.T) {
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		{Logic: `{"*":[]}`, Data: `null`, Err: true},
 		{Logic: `{"*":["a"]}`, Data: `null`, Err: true},
+		{Logic: `{"*":["3"]}`, Data: `null`, Result: float64(3)},
 		{Logic: `{"*":[2,"-2",2]}`, Data: `null`, Result: float64(-8)},
 	})
 }
