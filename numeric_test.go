@@ -72,3 +72,18 @@ func TestOpCompare(t *testing.T) {
 		{Logic: `{"<=":["1",101,"100"]}`, Data: `null`, Result: false},
 	})
 }
+
+func TestOpMinMax(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpMin(jl)
+	AddOpMax(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		{Logic: `{"min":[]}`, Data: `null`, Result: nil},
+		{Logic: `{"max":[]}`, Data: `null`, Result: nil},
+		{Logic: `{"min":["a"]}`, Data: `null`, Err: true},
+		{Logic: `{"max":["a"]}`, Data: `null`, Err: true},
+		{Logic: `{"min":[1,"3","-1",2]}`, Data: `null`, Result: float64(-1)},
+		{Logic: `{"max":[1,"3","-1",2]}`, Data: `null`, Result: float64(3)},
+	})
+}

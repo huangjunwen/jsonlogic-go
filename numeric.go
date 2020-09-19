@@ -78,3 +78,51 @@ func opCompare(symbol compSymbol) Operation {
 		return r0 && r1, nil
 	}
 }
+
+// AddOpMin adds "min" operation to the JSONLogic instance.
+func AddOpMin(jl *JSONLogic) {
+	jl.AddOperation("min", opMin)
+}
+
+func opMin(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	for _, param := range params {
+		r, err := apply(param, data)
+		if err != nil {
+			return nil, err
+		}
+
+		n, err := toNumeric(r)
+		if err != nil {
+			return nil, err
+		}
+
+		if res == nil || res.(float64) > n {
+			res = n
+		}
+	}
+	return
+}
+
+// AddOpMax adds "max" operation to the JSONLogic instance.
+func AddOpMax(jl *JSONLogic) {
+	jl.AddOperation("max", opMax)
+}
+
+func opMax(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	for _, param := range params {
+		r, err := apply(param, data)
+		if err != nil {
+			return nil, err
+		}
+
+		n, err := toNumeric(r)
+		if err != nil {
+			return nil, err
+		}
+
+		if res == nil || res.(float64) < n {
+			res = n
+		}
+	}
+	return
+}

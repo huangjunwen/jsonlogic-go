@@ -31,6 +31,8 @@ func New() *JSONLogic {
 	AddOpLessEqual(ret)
 	AddOpGreaterThan(ret)
 	AddOpGreaterEqual(ret)
+	AddOpMin(ret)
+	AddOpMax(ret)
 	return ret
 }
 
