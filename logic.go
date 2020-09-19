@@ -1,5 +1,9 @@
 package jsonlogic
 
+import (
+	"fmt"
+)
+
 // AddOpIf adds "if"/"?:" operation to the JSONLogic instance.
 func AddOpIf(jl *JSONLogic) {
 	jl.AddOperation("if", opIf)
@@ -24,4 +28,56 @@ func opIf(apply Applier, params []interface{}, data interface{}) (res interface{
 	}
 
 	return nil, nil
+}
+
+// AddOpStrictEqual adds "===" operation to the JSONLogic instance.
+func AddOpStrictEqual(jl *JSONLogic) {
+	jl.AddOperation("===", opStrictEqual)
+}
+
+func opStrictEqual(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+
+	var leftObj, rightObj interface{}
+
+	switch len(params) {
+	default:
+		fallthrough
+
+	case 2:
+		leftObj, err = apply(params[0], data)
+		if err != nil {
+			return
+		}
+		rightObj, err = apply(params[1], data)
+		if err != nil {
+			return
+		}
+
+		if isPrimitive(leftObj) && isPrimitive(rightObj) {
+			return leftObj == rightObj, nil
+		}
+
+		// XXX: This is different with jsonlogic-js
+		return nil, fmt.Errorf("===/!==: params should be primitives")
+
+	case 1:
+		return false, nil
+
+	case 0:
+		return true, nil
+	}
+
+}
+
+// AddOpStrictNotEqual adds "!==" operation to the JSONLogic instance.
+func AddOpStrictNotEqual(jl *JSONLogic) {
+	jl.AddOperation("!==", opStrictNotEqual)
+}
+
+func opStrictNotEqual(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	r, err := opStrictEqual(apply, params, data)
+	if err != nil {
+		return
+	}
+	return !r.(bool), nil
 }

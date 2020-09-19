@@ -13,10 +13,7 @@ func AddOpVar(jl *JSONLogic) {
 
 func opVar(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
 
-	var (
-		keyObj interface{}
-		defObj interface{}
-	)
+	var keyObj, defObj interface{}
 
 	switch len(params) {
 	default:

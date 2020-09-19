@@ -20,6 +20,8 @@ func NewJSONLogic() *JSONLogic {
 	AddOpMissingSome(ret)
 	// Logic.
 	AddOpIf(ret)
+	AddOpStrictEqual(ret)
+	AddOpStrictNotEqual(ret)
 	return ret
 }
 

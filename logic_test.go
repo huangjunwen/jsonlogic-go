@@ -24,3 +24,47 @@ func TestOpIf(t *testing.T) {
 	})
 
 }
+
+func TestOpStrictEqual(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmptyJSONLogic()
+	AddOpStrictEqual(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html
+		{Logic: `{"===":[1,1]}`, Data: `null`, Result: true},
+		{Logic: `{"===":[1,"1"]}`, Data: `null`, Result: false},
+		// Zero param.
+		{Logic: `{"===":[]}`, Data: `null`, Result: true},
+		// One param.
+		{Logic: `{"===":[null]}`, Data: `null`, Result: false},
+		// Two params, primitives.
+		{Logic: `{"===":[null,null]}`, Data: `null`, Result: true},
+		{Logic: `{"===":[false,false]}`, Data: `null`, Result: true},
+		{Logic: `{"===":[3.0,3]}`, Data: `null`, Result: true},
+		{Logic: `{"===":["",""]}`, Data: `null`, Result: true},
+		{Logic: `{"===":["",3.0]}`, Data: `null`, Result: false},
+	})
+
+}
+
+func TestOpStrictNotEqual(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmptyJSONLogic()
+	AddOpStrictNotEqual(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html
+		{Logic: `{"!==":[1,2]}`, Data: `null`, Result: true},
+		{Logic: `{"!==":[1,"1"]}`, Data: `null`, Result: true},
+		// Zero param.
+		{Logic: `{"!==":[]}`, Data: `null`, Result: false},
+		// One param.
+		{Logic: `{"!==":[null]}`, Data: `null`, Result: true},
+		// Two params, primitives.
+		{Logic: `{"!==":[null,null]}`, Data: `null`, Result: false},
+		{Logic: `{"!==":[false,false]}`, Data: `null`, Result: false},
+		{Logic: `{"!==":[3.0,3]}`, Data: `null`, Result: false},
+		{Logic: `{"!==":["",""]}`, Data: `null`, Result: false},
+		{Logic: `{"!==":["",3.0]}`, Data: `null`, Result: true},
+	})
+
+}

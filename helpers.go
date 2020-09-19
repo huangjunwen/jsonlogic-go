@@ -49,7 +49,29 @@ func isTrue(obj interface{}) bool {
 		return o != ""
 	case []interface{}:
 		return len(o) != 0
+	case map[string]interface{}:
+		// Always true
+		return true
 	default:
 		panic(fmt.Errorf("isTrue: %T's truthy is not supported", obj))
+	}
+}
+
+func isPrimitive(obj interface{}) bool {
+	switch obj.(type) {
+	case nil:
+		return true
+	case bool:
+		return true
+	case float64:
+		return true
+	case string:
+		return true
+	case []interface{}:
+		return false
+	case map[string]interface{}:
+		return false
+	default:
+		panic(fmt.Errorf("isPrimitive: %T is not supported", obj))
 	}
 }
