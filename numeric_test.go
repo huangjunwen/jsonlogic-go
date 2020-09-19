@@ -87,3 +87,25 @@ func TestOpMinMax(t *testing.T) {
 		{Logic: `{"max":[1,"3","-1",2]}`, Data: `null`, Result: float64(3)},
 	})
 }
+
+func TestOpAdd(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpAdd(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		{Logic: `{"+":[]}`, Data: `null`, Result: float64(0)},
+		{Logic: `{"+":["a"]}`, Data: `null`, Err: true},
+		{Logic: `{"+":[1,"-2",33]}`, Data: `null`, Result: float64(32)},
+	})
+}
+
+func TestOpMul(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpMul(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		{Logic: `{"*":[]}`, Data: `null`, Err: true},
+		{Logic: `{"*":["a"]}`, Data: `null`, Err: true},
+		{Logic: `{"*":[2,"-2",2]}`, Data: `null`, Result: float64(-8)},
+	})
+}

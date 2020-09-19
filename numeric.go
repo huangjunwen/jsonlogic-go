@@ -126,3 +126,50 @@ func opMax(apply Applier, params []interface{}, data interface{}) (res interface
 	}
 	return
 }
+
+// AddOpAdd adds "+" operation to the JSONLogic instance.
+func AddOpAdd(jl *JSONLogic) {
+	jl.AddOperation("+", opAdd)
+}
+
+func opAdd(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	sum := float64(0)
+	for _, param := range params {
+		r, err := apply(param, data)
+		if err != nil {
+			return nil, err
+		}
+
+		n, err := toNumeric(r)
+		if err != nil {
+			return nil, err
+		}
+		sum += n
+	}
+	return sum, nil
+}
+
+// AddOpMul adds "*" operation to the JSONLogic instance.
+func AddOpMul(jl *JSONLogic) {
+	jl.AddOperation("*", opMul)
+}
+
+func opMul(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) == 0 {
+		return nil, fmt.Errorf("mul: expect at least one param")
+	}
+	prod := float64(1)
+	for _, param := range params {
+		r, err := apply(param, data)
+		if err != nil {
+			return nil, err
+		}
+
+		n, err := toNumeric(r)
+		if err != nil {
+			return nil, err
+		}
+		prod *= n
+	}
+	return prod, nil
+}
