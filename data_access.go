@@ -18,20 +18,18 @@ func opVar(apply Applier, params []interface{}, data interface{}) (res interface
 	switch len(params) {
 	default:
 		fallthrough
-
 	case 2:
 		defObj, err = apply(params[1], data)
 		if err != nil {
 			return
 		}
 		fallthrough
-
 	case 1:
 		keyObj, err = apply(params[0], data)
 		if err != nil {
 			return
 		}
-
+		fallthrough
 	case 0:
 	}
 
