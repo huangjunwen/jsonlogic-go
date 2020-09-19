@@ -94,7 +94,7 @@ func opNegative(apply Applier, params []interface{}, data interface{}) (res inte
 	}
 	res, err = apply(param, data)
 	if err != nil {
-		return nil, err
+		return
 	}
 	return !isTrue(res), nil
 }
@@ -110,4 +110,46 @@ func opDoubleNegative(apply Applier, params []interface{}, data interface{}) (re
 		return
 	}
 	return !r.(bool), nil
+}
+
+// AddOpAnd adds "and" operation to the JSONLogic instance.
+func AddOpAnd(jl *JSONLogic) {
+	jl.AddOperation("and", opAnd)
+}
+
+func opAnd(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) == 0 {
+		return nil, fmt.Errorf("and: expect at least one params")
+	}
+	for _, param := range params {
+		res, err = apply(param, data)
+		if err != nil {
+			return
+		}
+		if !isTrue(res) {
+			return res, nil
+		}
+	}
+	return
+}
+
+// AddOpOr adds "or" operation to the JSONLogic instance.
+func AddOpOr(jl *JSONLogic) {
+	jl.AddOperation("or", opOr)
+}
+
+func opOr(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) == 0 {
+		return nil, fmt.Errorf("or: expect at least one params")
+	}
+	for _, param := range params {
+		res, err = apply(param, data)
+		if err != nil {
+			return
+		}
+		if isTrue(res) {
+			return res, nil
+		}
+	}
+	return
 }

@@ -122,3 +122,33 @@ func TestOpDoubleNegative(t *testing.T) {
 		{Logic: `{"!!":{"1":2,"3":4}}`, Data: `null`, Result: true},
 	})
 }
+
+func TestOpAnd(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpAnd(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html
+		{Logic: `{"and":[true,true]}`, Data: `null`, Result: true},
+		{Logic: `{"and":[true,false]}`, Data: `null`, Result: false},
+		{Logic: `{"and":[true,"a",3]}`, Data: `null`, Result: float64(3)},
+		{Logic: `{"and":[true,"",3]}`, Data: `null`, Result: ""},
+		// Zero param.
+		{Logic: `{"and":[]}`, Data: `null`, Err: true},
+	})
+}
+
+func TestOpOr(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpOr(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html
+		{Logic: `{"or":[true,false]}`, Data: `null`, Result: true},
+		{Logic: `{"or":[false,true]}`, Data: `null`, Result: true},
+		{Logic: `{"or":[false,"a"]}`, Data: `null`, Result: "a"},
+		{Logic: `{"or":[false,0,"a"]}`, Data: `null`, Result: "a"},
+		// Zero param.
+		{Logic: `{"or":[]}`, Data: `null`, Err: true},
+	})
+}

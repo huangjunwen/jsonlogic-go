@@ -24,6 +24,8 @@ func New() *JSONLogic {
 	AddOpStrictNotEqual(ret)
 	AddOpNegative(ret)
 	AddOpDoubleNegative(ret)
+	AddOpAnd(ret)
+	AddOpOr(ret)
 	return ret
 }
 
