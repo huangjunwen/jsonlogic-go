@@ -81,3 +81,33 @@ func opStrictNotEqual(apply Applier, params []interface{}, data interface{}) (re
 	}
 	return !r.(bool), nil
 }
+
+// AddOpNegative adds "!" operation to the JSONLogic instance.
+func AddOpNegative(jl *JSONLogic) {
+	jl.AddOperation("!", opNegative)
+}
+
+func opNegative(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	var param interface{}
+	if len(params) > 0 {
+		param = params[0]
+	}
+	res, err = apply(param, data)
+	if err != nil {
+		return nil, err
+	}
+	return !isTrue(res), nil
+}
+
+// AddOpDoubleNegative adds "!!" operation to the JSONLogic instance.
+func AddOpDoubleNegative(jl *JSONLogic) {
+	jl.AddOperation("!!", opDoubleNegative)
+}
+
+func opDoubleNegative(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	r, err := opNegative(apply, params, data)
+	if err != nil {
+		return
+	}
+	return !r.(bool), nil
+}

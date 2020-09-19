@@ -8,7 +8,7 @@ import (
 
 func TestOpIf(t *testing.T) {
 	assert := assert.New(t)
-	jl := NewEmptyJSONLogic()
+	jl := NewEmpty()
 	AddOpIf(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html#if
@@ -27,7 +27,7 @@ func TestOpIf(t *testing.T) {
 
 func TestOpStrictEqual(t *testing.T) {
 	assert := assert.New(t)
-	jl := NewEmptyJSONLogic()
+	jl := NewEmpty()
 	AddOpStrictEqual(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html
@@ -43,13 +43,15 @@ func TestOpStrictEqual(t *testing.T) {
 		{Logic: `{"===":[3.0,3]}`, Data: `null`, Result: true},
 		{Logic: `{"===":["",""]}`, Data: `null`, Result: true},
 		{Logic: `{"===":["",3.0]}`, Data: `null`, Result: false},
+		// Non-primitives.
+		{Logic: `{"===":["",[]]}`, Data: `null`, Err: true},
 	})
 
 }
 
 func TestOpStrictNotEqual(t *testing.T) {
 	assert := assert.New(t)
-	jl := NewEmptyJSONLogic()
+	jl := NewEmpty()
 	AddOpStrictNotEqual(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html
@@ -65,6 +67,58 @@ func TestOpStrictNotEqual(t *testing.T) {
 		{Logic: `{"!==":[3.0,3]}`, Data: `null`, Result: false},
 		{Logic: `{"!==":["",""]}`, Data: `null`, Result: false},
 		{Logic: `{"!==":["",3.0]}`, Data: `null`, Result: true},
+		// Non-primitives.
+		{Logic: `{"!==":["",[]]}`, Data: `null`, Err: true},
 	})
 
+}
+
+func TestOpNegative(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpNegative(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html
+		{Logic: `{"!":[true]}`, Data: `null`, Result: false},
+		{Logic: `{"!":true}`, Data: `null`, Result: false},
+		// Zero param.
+		{Logic: `{"!":[]}`, Data: `null`, Result: true},
+		// One param.
+		{Logic: `{"!":null}`, Data: `null`, Result: true},
+		{Logic: `{"!":false}`, Data: `null`, Result: true},
+		{Logic: `{"!":true}`, Data: `null`, Result: false},
+		{Logic: `{"!":0}`, Data: `null`, Result: true},
+		{Logic: `{"!":-1}`, Data: `null`, Result: false},
+		{Logic: `{"!":""}`, Data: `null`, Result: true},
+		{Logic: `{"!":"x"}`, Data: `null`, Result: false},
+		{Logic: `{"!":[[]]}`, Data: `null`, Result: true},
+		{Logic: `{"!":[["x"]]}`, Data: `null`, Result: false},
+		{Logic: `{"!":{}}`, Data: `null`, Result: false},
+		{Logic: `{"!":{"1":2,"3":4}}`, Data: `null`, Result: false},
+	})
+}
+
+func TestOpDoubleNegative(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpDoubleNegative(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html
+		{Logic: `{"!!":[true]}`, Data: `null`, Result: true},
+		{Logic: `{"!!":true}`, Data: `null`, Result: true},
+		// Zero param.
+		{Logic: `{"!!":[]}`, Data: `null`, Result: false},
+		// One param.
+		{Logic: `{"!!":null}`, Data: `null`, Result: false},
+		{Logic: `{"!!":false}`, Data: `null`, Result: false},
+		{Logic: `{"!!":true}`, Data: `null`, Result: true},
+		{Logic: `{"!!":0}`, Data: `null`, Result: false},
+		{Logic: `{"!!":-1}`, Data: `null`, Result: true},
+		{Logic: `{"!!":""}`, Data: `null`, Result: false},
+		{Logic: `{"!!":"x"}`, Data: `null`, Result: true},
+		{Logic: `{"!!":[[]]}`, Data: `null`, Result: false},
+		{Logic: `{"!!":[["x"]]}`, Data: `null`, Result: true},
+		{Logic: `{"!!":{}}`, Data: `null`, Result: true},
+		{Logic: `{"!!":{"1":2,"3":4}}`, Data: `null`, Result: true},
+	})
 }

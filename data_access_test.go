@@ -8,7 +8,7 @@ import (
 
 func TestOpVar(t *testing.T) {
 	assert := assert.New(t)
-	jl := NewEmptyJSONLogic()
+	jl := NewEmpty()
 	AddOpVar(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html#var
@@ -59,7 +59,7 @@ func TestOpVar(t *testing.T) {
 
 func TestOpMissing(t *testing.T) {
 	assert := assert.New(t)
-	jl := NewEmptyJSONLogic()
+	jl := NewEmpty()
 	AddOpMissing(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html#missing
@@ -76,7 +76,7 @@ func TestOpMissing(t *testing.T) {
 
 func TestOpMissingSome(t *testing.T) {
 	assert := assert.New(t)
-	jl := NewEmptyJSONLogic()
+	jl := NewEmpty()
 	AddOpMissingSome(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html#missing_some

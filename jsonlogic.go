@@ -12,20 +12,22 @@ type Applier func(logic, data interface{}) (res interface{}, err error)
 
 type Operation func(apply Applier, params []interface{}, data interface{}) (interface{}, error)
 
-func NewJSONLogic() *JSONLogic {
-	ret := NewEmptyJSONLogic()
+func New() *JSONLogic {
+	ret := NewEmpty()
 	// Data access.
 	AddOpVar(ret)
 	AddOpMissing(ret)
 	AddOpMissingSome(ret)
-	// Logic.
+	// Logic. XXX: "=="/"!=" not supported, only support "==="/"!=="
 	AddOpIf(ret)
 	AddOpStrictEqual(ret)
 	AddOpStrictNotEqual(ret)
+	AddOpNegative(ret)
+	AddOpDoubleNegative(ret)
 	return ret
 }
 
-func NewEmptyJSONLogic() *JSONLogic {
+func NewEmpty() *JSONLogic {
 	return &JSONLogic{
 		ops: make(map[string]Operation),
 	}
