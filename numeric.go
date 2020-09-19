@@ -33,6 +33,7 @@ func opCompare(symbol compSymbol) Operation {
 		if len(params) < 2 {
 			return false, nil
 		}
+
 		var (
 			params0, params1, params2 interface{}
 			between                   bool
@@ -41,10 +42,13 @@ func opCompare(symbol compSymbol) Operation {
 		default:
 			fallthrough
 		case 3:
-			between = true
-			params2, err = apply(params[2], data)
-			if err != nil {
-				return
+			switch symbol {
+			case lt, le:
+				params2, err = apply(params[2], data)
+				if err != nil {
+					return
+				}
+				between = true
 			}
 			fallthrough
 		case 2:
@@ -65,12 +69,9 @@ func opCompare(symbol compSymbol) Operation {
 
 		var r1 = true
 		if between {
-			switch symbol {
-			case lt, le:
-				r1, err = compareValues(symbol, params1, params2)
-				if err != nil {
-					return nil, fmt.Errorf("%s: %s", symbol, err.Error())
-				}
+			r1, err = compareValues(symbol, params1, params2)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", symbol, err.Error())
 			}
 		}
 
