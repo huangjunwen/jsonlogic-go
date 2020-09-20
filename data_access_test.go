@@ -53,6 +53,9 @@ func TestOpVar(t *testing.T) {
 		// Mix.
 		{Logic: `{"var":"1.a"}`, Data: `["a",{"a":"b"}]`, Result: "b"},
 		{Logic: `{"var":"a.0"}`, Data: `{"a":[8,9,10]}`, Result: float64(8)},
+		// Err.
+		{Logic: `{"var":[]}`, Data: `null`, Err: true},
+		{Logic: `{"var":[[]]}`, Data: `null`, Err: true},
 	})
 
 }
@@ -60,27 +63,38 @@ func TestOpVar(t *testing.T) {
 func TestOpMissing(t *testing.T) {
 	assert := assert.New(t)
 	jl := NewEmpty()
+	AddOpVar(jl)
 	AddOpMissing(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html#missing
 		{Logic: `{"missing":["a","b"]}`, Data: `{"a":"apple","c":"carrot"}`, Result: []interface{}{"b"}},
 		{Logic: `{"missing":["a","b"]}`, Data: `{"a":"apple", "b":"banana"}`, Result: []interface{}{}},
 		// null or "" are treated as  missing
-		{Logic: `{"missing":"a"}`, Data: `{"a":null}`, Result: []interface{}{"a"}},
-		{Logic: `{"missing":"a"}`, Data: `{"a":""}`, Result: []interface{}{"a"}},
+		{Logic: `{"missing":"a"}`, Data: `{"a":null}`, Result: []interface{}{"a"}}, // Surprise!
+		{Logic: `{"missing":"a"}`, Data: `{"a":""}`, Result: []interface{}{"a"}},   // Surprise again!
+		{Logic: `{"missing":"a"}`, Data: `{"a":false}`, Result: []interface{}{}},
+		{Logic: `{"missing":"a"}`, Data: `{"a":0}`, Result: []interface{}{}},
 		{Logic: `{"missing":"a"}`, Data: `{"a":[]}`, Result: []interface{}{}},
 		{Logic: `{"missing":"a"}`, Data: `{"a":{}}`, Result: []interface{}{}},
-		{Logic: `{"missing":"a"}`, Data: `{"a":false}`, Result: []interface{}{}},
+		// First param is an array.
+		{Logic: `{"missing":[["a"]]}`, Data: `{"a":"1"}`, Result: []interface{}{}},
+		{Logic: `{"missing":[["a"]]}`, Data: `{"b":"1"}`, Result: []interface{}{"a"}},
+		// Using logic in param.
+		{Logic: `{"missing":{"var":"pointer"}}`, Data: `{"a":"xxx","pointer":"a"}`, Result: []interface{}{}},
+		{Logic: `{"missing":{"var":"pointer"}}`, Data: `{"a":"xxx","pointer":"b"}`, Result: []interface{}{"b"}},
 	})
 }
 
 func TestOpMissingSome(t *testing.T) {
 	assert := assert.New(t)
 	jl := NewEmpty()
+	AddOpVar(jl)
 	AddOpMissingSome(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html#missing_some
 		{Logic: `{"missing_some":[1,["a","b","c"]]}`, Data: `{"a":"apple"}`, Result: []interface{}{}},
 		{Logic: `{"missing_some":[2,["a","b","c"]]}`, Data: `{"a":"apple"}`, Result: []interface{}{"b", "c"}},
+		// Using logic in param.
+		{Logic: `{"missing_some":[2,{"var":"pointer"}]}`, Data: `{"pointer":["x","y"]}`, Result: []interface{}{"x", "y"}},
 	})
 }

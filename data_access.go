@@ -6,55 +6,53 @@ import (
 	"strings"
 )
 
-// AddOpVar adds "var" operation to the JSONLogic instance.
+// AddOpVar adds "var" operation to the JSONLogic instance. Param restriction:
+//   - At least one param (the key).
+//   - Keys must be evaluated to json primitives.
 func AddOpVar(jl *JSONLogic) {
 	jl.AddOperation("var", opVar)
 }
 
 func opVar(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) < 1 {
+		return nil, fmt.Errorf("var: expect at least one param")
+	}
+	params, err = applyParams(apply, params, data)
+	if err != nil {
+		return
+	}
 
-	var keyObj, defObj interface{}
-
-	switch len(params) {
-	default:
-		fallthrough
-	case 2:
-		defObj, err = apply(params[1], data)
-		if err != nil {
-			return
-		}
-		fallthrough
-	case 1:
-		keyObj, err = apply(params[0], data)
-		if err != nil {
-			return
-		}
-		fallthrough
-	case 0:
+	param0 := params[0]
+	var param1 interface{}
+	if len(params) >= 2 {
+		param1 = params[1]
 	}
 
 	var key string
-	switch k := keyObj.(type) {
+	switch k := param0.(type) {
 	case nil:
 		// Returns whole data if key is null
 		return data, nil
-
+	case bool:
+		if k {
+			key = "true"
+		} else {
+			key = "false"
+		}
 	case float64:
 		key = strconv.FormatFloat(k, 'f', -1, 64)
-
 	case string:
 		// Returns whole data if key is empty string
 		if k == "" {
 			return data, nil
 		}
 		key = k
-
 	default:
-		// XXX: This is different with jsonlogic-js
-		return nil, fmt.Errorf("var: param should be null/number/string but got %T", keyObj)
+		return nil, fmt.Errorf("var: key must be json primitive but got %T", param0)
 	}
 
 	res = data
+	// NOTE: key is not empty here
 	for _, part := range strings.Split(key, ".") {
 		switch r := res.(type) {
 		case []interface{}:
@@ -71,18 +69,31 @@ func opVar(apply Applier, params []interface{}, data interface{}) (res interface
 				continue
 			}
 		}
-		return defObj, nil
+		return param1, nil
 	}
 	return res, nil
 
 }
 
 // AddOpMissing adds "missing" operation to the JSONLogic instance.
+// NOTE: null/"" is considered as missing, for example:
+//   logic: {"missing":"a"}
+//   data: {"a":null}
+//   result will be ["a"]
+// ref:
+//   - json-logic-js/logic.js::"missing"
 func AddOpMissing(jl *JSONLogic) {
 	jl.AddOperation("missing", opMissing)
 }
 
 func opMissing(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) == 0 {
+		return []interface{}{}, nil
+	}
+	params, err = applyParams(apply, params, data)
+	if err != nil {
+		return
+	}
 
 	keys, ok := params[0].([]interface{})
 	if !ok {
@@ -103,16 +114,22 @@ func opMissing(apply Applier, params []interface{}, data interface{}) (res inter
 
 }
 
-// AddOpMissingSome adds "missing_some" operation to the JSONLogic instance.
+// AddOpMissingSome adds "missing_some" operation to the JSONLogic instance. Param restriction:
+//   - At least 2 params.
+//   - The first must be evaluated to a numeric and the second evaluated to an array.
 func AddOpMissingSome(jl *JSONLogic) {
 	jl.AddOperation("missing_some", opMissingSome)
 }
 
 func opMissingSome(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
-
 	if len(params) != 2 {
 		return nil, fmt.Errorf("missing_some: expect 2 params")
 	}
+	params, err = applyParams(apply, params, data)
+	if err != nil {
+		return
+	}
+
 	needed, ok := params[0].(float64)
 	if !ok {
 		return nil, fmt.Errorf("missing_some: expect number for param 0 but got %T", params[0])

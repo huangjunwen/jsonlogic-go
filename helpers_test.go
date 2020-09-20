@@ -34,27 +34,9 @@ func TestGetLogic(t *testing.T) {
 		Op     string
 		Params []interface{}
 	}{
-		{
-			Obj: map[string]interface{}{
-				"var": nil,
-			},
-			Op:     "var",
-			Params: []interface{}{nil},
-		},
-		{
-			Obj: map[string]interface{}{
-				"var": []interface{}{},
-			},
-			Op:     "var",
-			Params: []interface{}{},
-		},
-		{
-			Obj: map[string]interface{}{
-				"var": []interface{}{[]interface{}{}},
-			},
-			Op:     "var",
-			Params: []interface{}{[]interface{}{}},
-		},
+		{Obj: map[string]interface{}{"var": nil}, Op: "var", Params: []interface{}{nil}},                                        // {"var":null} -> [null]
+		{Obj: map[string]interface{}{"var": []interface{}{}}, Op: "var", Params: []interface{}{}},                               // {"var":[]}   -> []
+		{Obj: map[string]interface{}{"var": []interface{}{[]interface{}{}}}, Op: "var", Params: []interface{}{[]interface{}{}}}, // {"var":[[]]} -> [[]]
 	} {
 		op, params := getLogic(testCase.Obj)
 		assert.Equal(testCase.Op, op, "test case %d", i)

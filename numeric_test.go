@@ -15,14 +15,14 @@ func TestOpCompare(t *testing.T) {
 	AddOpGreaterEqual(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// Zero/One param.
-		{Logic: `{">":[]}`, Data: `null`, Result: false},
-		{Logic: `{">":[1]}`, Data: `null`, Result: false},
-		{Logic: `{"<":[]}`, Data: `null`, Result: false},
-		{Logic: `{"<":[1]}`, Data: `null`, Result: false},
-		{Logic: `{">=":[]}`, Data: `null`, Result: false},
-		{Logic: `{">=":[1]}`, Data: `null`, Result: false},
-		{Logic: `{"<=":[]}`, Data: `null`, Result: false},
-		{Logic: `{"<=":[1]}`, Data: `null`, Result: false},
+		{Logic: `{">":[]}`, Data: `null`, Err: true},
+		{Logic: `{">":[1]}`, Data: `null`, Err: true},
+		{Logic: `{"<":[]}`, Data: `null`, Err: true},
+		{Logic: `{"<":[1]}`, Data: `null`, Err: true},
+		{Logic: `{">=":[]}`, Data: `null`, Err: true},
+		{Logic: `{">=":[1]}`, Data: `null`, Err: true},
+		{Logic: `{"<=":[]}`, Data: `null`, Err: true},
+		{Logic: `{"<=":[1]}`, Data: `null`, Err: true},
 		// Two params, numeric compare.
 		{Logic: `{">":[1.1,1]}`, Data: `null`, Result: true},
 		{Logic: `{">":[1,1]}`, Data: `null`, Result: false},
@@ -50,7 +50,6 @@ func TestOpCompare(t *testing.T) {
 		{Logic: `{"<=":["b","b"]}`, Data: `null`, Result: true},
 		{Logic: `{"<=":["a","b"]}`, Data: `null`, Result: true},
 		// Two params, mix compare (as numeric).
-		{Logic: `{">":["b",0]}`, Data: `null`, Err: true},
 		{Logic: `{">":["1",0]}`, Data: `null`, Result: true},
 		{Logic: `{">":["1",2]}`, Data: `null`, Result: false},
 		{Logic: `{">=":["0",0]}`, Data: `null`, Result: true},
@@ -59,6 +58,16 @@ func TestOpCompare(t *testing.T) {
 		{Logic: `{"<":["1",2]}`, Data: `null`, Result: true},
 		{Logic: `{"<=":["0",0]}`, Data: `null`, Result: true},
 		{Logic: `{"<=":["0",1]}`, Data: `null`, Result: true},
+		// Ill-form numeric.
+		{Logic: `{"<":["b",0]}`, Data: `null`, Err: true},
+		{Logic: `{"<=":["b",0]}`, Data: `null`, Err: true},
+		{Logic: `{">":["b",0]}`, Data: `null`, Err: true},
+		{Logic: `{">=":["b",0]}`, Data: `null`, Err: true},
+		// Non-primitive.
+		{Logic: `{"<":[1,[]]}`, Data: `null`, Err: true},
+		{Logic: `{"<=":[1,[]]}`, Data: `null`, Err: true},
+		{Logic: `{">":[1,[]]}`, Data: `null`, Err: true},
+		{Logic: `{">=":[1,[]]}`, Data: `null`, Err: true},
 		// Three params (between).
 		{Logic: `{"<":["1",10,"100"]}`, Data: `null`, Result: true},
 		{Logic: `{"<":["1",1,"100"]}`, Data: `null`, Result: false},
@@ -81,10 +90,10 @@ func TestOpMinMax(t *testing.T) {
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		{Logic: `{"min":[]}`, Data: `null`, Result: nil},
 		{Logic: `{"max":[]}`, Data: `null`, Result: nil},
-		{Logic: `{"min":["a"]}`, Data: `null`, Err: true},
-		{Logic: `{"max":["a"]}`, Data: `null`, Err: true},
 		{Logic: `{"min":[1,"3","-1",2]}`, Data: `null`, Result: float64(-1)},
 		{Logic: `{"max":[1,"3","-1",2]}`, Data: `null`, Result: float64(3)},
+		{Logic: `{"min":["a"]}`, Data: `null`, Err: true},
+		{Logic: `{"max":["a"]}`, Data: `null`, Err: true},
 	})
 }
 
@@ -94,9 +103,9 @@ func TestOpAdd(t *testing.T) {
 	AddOpAdd(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		{Logic: `{"+":[]}`, Data: `null`, Result: float64(0)},
-		{Logic: `{"+":["a"]}`, Data: `null`, Err: true},
 		{Logic: `{"+":["1"]}`, Data: `null`, Result: float64(1)},
 		{Logic: `{"+":[1,"-2",33]}`, Data: `null`, Result: float64(32)},
+		{Logic: `{"+":["a"]}`, Data: `null`, Err: true},
 	})
 }
 
@@ -106,8 +115,8 @@ func TestOpMul(t *testing.T) {
 	AddOpMul(jl)
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		{Logic: `{"*":[]}`, Data: `null`, Err: true},
-		{Logic: `{"*":["a"]}`, Data: `null`, Err: true},
 		{Logic: `{"*":["3"]}`, Data: `null`, Result: float64(3)},
 		{Logic: `{"*":[2,"-2",2]}`, Data: `null`, Result: float64(-8)},
+		{Logic: `{"*":["a"]}`, Data: `null`, Err: true},
 	})
 }

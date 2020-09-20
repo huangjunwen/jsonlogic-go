@@ -4,72 +4,49 @@ import (
 	"fmt"
 )
 
-// AddOpLessThan adds "<" operation to the JSONLogic instance.
+// AddOpLessThan adds "<" operation to the JSONLogic instance. Param restriction:
+//   - At least two params.
+//   - Must be evaluated to json primitives.
+//   - If comparing numerics, then params must be able to convert to numeric. (See toNumeric)
 func AddOpLessThan(jl *JSONLogic) {
 	jl.AddOperation(string(lt), opCompare(lt))
 }
 
-// AddOpLessEqual adds "<=" operation to the JSONLogic instance.
+// AddOpLessEqual adds "<=" operation to the JSONLogic instance. Param restriction: the same as "<".
 func AddOpLessEqual(jl *JSONLogic) {
 	jl.AddOperation(string(le), opCompare(le))
 }
 
-// AddOpGreaterThan adds ">" operation to the JSONLogic instance.
+// AddOpGreaterThan adds ">" operation to the JSONLogic instance. Param restriction: the same as "<".
 func AddOpGreaterThan(jl *JSONLogic) {
 	jl.AddOperation(string(gt), opCompare(gt))
 }
 
-// AddOpGreaterEqual adds ">=" operation to the JSONLogic instance.
+// AddOpGreaterEqual adds ">=" operation to the JSONLogic instance. Param restriction: the same as "<".
 func AddOpGreaterEqual(jl *JSONLogic) {
 	jl.AddOperation(string(ge), opCompare(ge))
 }
 
-// opCompare returns false if len(params) < 2, since compare undefined with any returns false.
-//
 // ref:
 //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than
 func opCompare(symbol compSymbol) Operation {
 	return func(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
 		if len(params) < 2 {
-			return false, nil
+			return nil, fmt.Errorf("%s: expect at least two params", symbol)
+		}
+		params, err = applyParams(apply, params, data)
+		if err != nil {
+			return
 		}
 
-		var (
-			params0, params1, params2 interface{}
-			between                   bool
-		)
-		switch len(params) {
-		default:
-			fallthrough
-		case 3:
-			switch symbol {
-			case lt, le:
-				params2, err = apply(params[2], data)
-				if err != nil {
-					return
-				}
-				between = true
-			}
-			fallthrough
-		case 2:
-			params1, err = apply(params[1], data)
-			if err != nil {
-				return
-			}
-			params0, err = apply(params[0], data)
-			if err != nil {
-				return
-			}
-		}
-
-		r0, err := compareValues(symbol, params0, params1)
+		r0, err := compareValues(symbol, params[0], params[1])
 		if err != nil {
 			return nil, fmt.Errorf("%s: %s", symbol, err.Error())
 		}
 
 		var r1 = true
-		if between {
-			r1, err = compareValues(symbol, params1, params2)
+		if len(params) > 2 {
+			r1, err = compareValues(symbol, params[1], params[2])
 			if err != nil {
 				return nil, fmt.Errorf("%s: %s", symbol, err.Error())
 			}
@@ -79,7 +56,8 @@ func opCompare(symbol compSymbol) Operation {
 	}
 }
 
-// AddOpMin adds "min" operation to the JSONLogic instance.
+// AddOpMin adds "min" operation to the JSONLogic instance. Param restriction:
+//   - Must be evaluated to json primitives that can convert to numeric.
 func AddOpMin(jl *JSONLogic) {
 	jl.AddOperation("min", opMin)
 }
@@ -103,7 +81,7 @@ func opMin(apply Applier, params []interface{}, data interface{}) (res interface
 	return
 }
 
-// AddOpMax adds "max" operation to the JSONLogic instance.
+// AddOpMax adds "max" operation to the JSONLogic instance. Param restriction: the same as "and".
 func AddOpMax(jl *JSONLogic) {
 	jl.AddOperation("max", opMax)
 }
@@ -127,7 +105,8 @@ func opMax(apply Applier, params []interface{}, data interface{}) (res interface
 	return
 }
 
-// AddOpAdd adds "+" operation to the JSONLogic instance.
+// AddOpAdd adds "+" operation to the JSONLogic instance. Param restriction:
+//   - Must be evaluated to json primitives that can convert to numeric.
 func AddOpAdd(jl *JSONLogic) {
 	jl.AddOperation("+", opAdd)
 }
@@ -149,13 +128,15 @@ func opAdd(apply Applier, params []interface{}, data interface{}) (res interface
 	return sum, nil
 }
 
-// AddOpMul adds "*" operation to the JSONLogic instance.
+// AddOpMul adds "*" operation to the JSONLogic instance. Param restriction:
+//   - At least one param.
+//   - Must be evaluated to json primitives that can convert to numeric.
 func AddOpMul(jl *JSONLogic) {
 	jl.AddOperation("*", opMul)
 }
 
 func opMul(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
-	if len(params) == 0 {
+	if len(params) < 1 {
 		return nil, fmt.Errorf("*: expect at least one param")
 	}
 	prod := float64(1)

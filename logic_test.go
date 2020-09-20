@@ -33,10 +33,9 @@ func TestOpStrictEqual(t *testing.T) {
 		// http://jsonlogic.com/operations.html
 		{Logic: `{"===":[1,1]}`, Data: `null`, Result: true},
 		{Logic: `{"===":[1,"1"]}`, Data: `null`, Result: false},
-		// Zero param.
-		{Logic: `{"===":[]}`, Data: `null`, Result: true},
-		// One param.
-		{Logic: `{"===":[null]}`, Data: `null`, Result: false},
+		// Zero/One param.
+		{Logic: `{"===":[]}`, Data: `null`, Err: true},
+		{Logic: `{"===":[null]}`, Data: `null`, Err: true},
 		// Two params, primitives.
 		{Logic: `{"===":[null,null]}`, Data: `null`, Result: true},
 		{Logic: `{"===":[false,false]}`, Data: `null`, Result: true},
@@ -57,10 +56,9 @@ func TestOpStrictNotEqual(t *testing.T) {
 		// http://jsonlogic.com/operations.html
 		{Logic: `{"!==":[1,2]}`, Data: `null`, Result: true},
 		{Logic: `{"!==":[1,"1"]}`, Data: `null`, Result: true},
-		// Zero param.
-		{Logic: `{"!==":[]}`, Data: `null`, Result: false},
-		// One param.
-		{Logic: `{"!==":[null]}`, Data: `null`, Result: true},
+		// Zero/One param.
+		{Logic: `{"!==":[]}`, Data: `null`, Err: true},
+		{Logic: `{"!==":[null]}`, Data: `null`, Err: true},
 		// Two params, primitives.
 		{Logic: `{"!==":[null,null]}`, Data: `null`, Result: false},
 		{Logic: `{"!==":[false,false]}`, Data: `null`, Result: false},
@@ -82,7 +80,7 @@ func TestOpNegative(t *testing.T) {
 		{Logic: `{"!":[true]}`, Data: `null`, Result: false},
 		{Logic: `{"!":true}`, Data: `null`, Result: false},
 		// Zero param.
-		{Logic: `{"!":[]}`, Data: `null`, Result: true},
+		{Logic: `{"!":[]}`, Data: `null`, Err: true},
 		// One param.
 		{Logic: `{"!":null}`, Data: `null`, Result: true},
 		{Logic: `{"!":false}`, Data: `null`, Result: true},
@@ -107,7 +105,7 @@ func TestOpDoubleNegative(t *testing.T) {
 		{Logic: `{"!!":[true]}`, Data: `null`, Result: true},
 		{Logic: `{"!!":true}`, Data: `null`, Result: true},
 		// Zero param.
-		{Logic: `{"!!":[]}`, Data: `null`, Result: false},
+		{Logic: `{"!!":[]}`, Data: `null`, Err: true},
 		// One param.
 		{Logic: `{"!!":null}`, Data: `null`, Result: false},
 		{Logic: `{"!!":false}`, Data: `null`, Result: false},

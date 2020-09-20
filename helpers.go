@@ -173,3 +173,11 @@ func compareValues(symbol compSymbol, left, right interface{}) (bool, error) {
 	}
 
 }
+
+func applyParams(apply Applier, params []interface{}, data interface{}) ([]interface{}, error) {
+	r, err := apply(params, data)
+	if err != nil {
+		return nil, err
+	}
+	return r.([]interface{}), nil
+}
