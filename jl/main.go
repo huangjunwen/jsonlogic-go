@@ -10,7 +10,7 @@ import (
 )
 
 func outputErrorAndExit(err error) {
-	fmt.Fprint(os.Stderr, err)
+	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
 }
 
