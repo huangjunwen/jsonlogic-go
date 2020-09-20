@@ -18,7 +18,7 @@ func opIf(apply Applier, params []interface{}, data interface{}) (res interface{
 		if err != nil {
 			return nil, err
 		}
-		if isTrue(r) {
+		if toBool(r) {
 			return apply(params[i+1], data)
 		}
 	}
@@ -96,7 +96,7 @@ func opNegative(apply Applier, params []interface{}, data interface{}) (res inte
 	if err != nil {
 		return
 	}
-	return !isTrue(res), nil
+	return !toBool(res), nil
 }
 
 // AddOpDoubleNegative adds "!!" operation to the JSONLogic instance.
@@ -126,7 +126,7 @@ func opAnd(apply Applier, params []interface{}, data interface{}) (res interface
 		if err != nil {
 			return
 		}
-		if !isTrue(res) {
+		if !toBool(res) {
 			return res, nil
 		}
 	}
@@ -147,7 +147,7 @@ func opOr(apply Applier, params []interface{}, data interface{}) (res interface{
 		if err != nil {
 			return
 		}
-		if isTrue(res) {
+		if toBool(res) {
 			return res, nil
 		}
 	}

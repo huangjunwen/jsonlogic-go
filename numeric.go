@@ -156,7 +156,7 @@ func AddOpMul(jl *JSONLogic) {
 
 func opMul(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
 	if len(params) == 0 {
-		return nil, fmt.Errorf("mul: expect at least one param")
+		return nil, fmt.Errorf("*: expect at least one param")
 	}
 	prod := float64(1)
 	for _, param := range params {

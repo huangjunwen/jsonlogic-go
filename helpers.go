@@ -34,30 +34,7 @@ func getLogic(obj interface{}) (op string, params []interface{}) {
 		}
 		return
 	}
-	panic(fmt.Errorf("getLogic: no operator in logic"))
-}
-
-// isTrue returns the truthy of an json object.
-// ref:
-//   - http://jsonlogic.com/truthy.html
-func isTrue(obj interface{}) bool {
-	switch o := obj.(type) {
-	case nil:
-		return false
-	case bool:
-		return o
-	case float64:
-		return o != 0
-	case string:
-		return o != ""
-	case []interface{}:
-		return len(o) != 0
-	case map[string]interface{}:
-		// Always true
-		return true
-	default:
-		panic(fmt.Errorf("isTrue: %T's truthy is not supported", obj))
-	}
+	panic(fmt.Errorf("no operator in logic"))
 }
 
 // isPrimitive returns true if obj is json primitive.
@@ -76,13 +53,37 @@ func isPrimitive(obj interface{}) bool {
 	case map[string]interface{}:
 		return false
 	default:
-		panic(fmt.Errorf("isPrimitive: %T is not supported", obj))
+		panic(fmt.Errorf("isPrimitive not support type %T", obj))
 	}
 }
 
-// toNumeric do a subset job of Number() in js:
-//   - obj must be json primitive
-//   - if obj is a string containing non numeric format, returns an error instead of NaN (like js)
+// toBool returns the truthy of a json object.
+// ref:
+//   - http://jsonlogic.com/truthy.html
+//   - json-logic-js/logic.js::truthy
+func toBool(obj interface{}) bool {
+	switch o := obj.(type) {
+	case nil:
+		return false
+	case bool:
+		return o
+	case float64:
+		return o != 0
+	case string:
+		return o != ""
+	case []interface{}:
+		return len(o) != 0
+	case map[string]interface{}:
+		// Always true
+		return true
+	default:
+		panic(fmt.Errorf("toBool got non-json type %T", obj))
+	}
+}
+
+// toNumeric converts json primitive to numeric. It should be the same as JavaScript's Number(), except:
+//   - an error is returned if obj is not a json primitive.
+//   - an error is returned if obj is string but not well-formed.
 func toNumeric(obj interface{}) (float64, error) {
 	switch o := obj.(type) {
 	case nil:
@@ -96,8 +97,10 @@ func toNumeric(obj interface{}) (float64, error) {
 		return o, nil
 	case string:
 		return strconv.ParseFloat(o, 64)
+	case []interface{}, map[string]interface{}:
+		return 0, fmt.Errorf("toNumeric not support type %T", obj)
 	default:
-		return 0, fmt.Errorf("toNumeric not support %T", obj)
+		panic(fmt.Errorf("toNumeric got non-json type %T", obj))
 	}
 }
 
@@ -111,7 +114,9 @@ const (
 	ge compSymbol = ">="
 )
 
-// compareValues only accepts json primitives
+// compareValues compares json primitives. It should be the same as JavaScript's "<"/"<="/">"/">=", except:
+//   - an error is returned if any value is not a json primitive.
+//   - any error retuend by toNumeric.
 //
 // ref:
 //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than
