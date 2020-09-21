@@ -1,5 +1,8 @@
 ## jsonlogic-go
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/huangjunwen/jsonlogic-go)](https://goreportcard.com/report/github.com/huangjunwen/jsonlogic-go)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/huangjunwen/jsonlogic-go)](https://pkg.go.dev/github.com/huangjunwen/jsonlogic-go)
+
 A [jsonlogic](http://jsonlogic.com) library in golang. 
 
 It is meant to be a 'stricter' version comparing to the [js](https://github.com/jwadhams/json-logic-js/) version:
@@ -20,7 +23,17 @@ then it is expected to be evaluated to the same result in client side. But the r
 - No `NaN`/`+Inf`/`-Inf`:
   - `{"/":[1,0]}` gets `null` in js but got an error in this library.
 
-
 ### Reference
 
 - Comparing in js: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than
+
+### Alternatives
+
+Alternative jsonlogic implementation in golang you may also interested.
+
+- https://github.com/diegoholiveira/jsonlogic
+- https://github.com/HuanTeng/go-jsonlogic
+
+### LICENSE
+
+MIT
