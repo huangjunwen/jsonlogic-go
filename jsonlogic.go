@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+var (
+	// DefaultJSONLogic is the JSONLogic instance used by package-level Apply/AddOperation.
+	DefaultJSONLogic = New()
+)
+
+// JSONLogic is an evaluator of json logic with a set of operations.
 type JSONLogic struct {
 	ops map[string]Operation
 }
@@ -12,6 +18,7 @@ type Applier func(logic, data interface{}) (res interface{}, err error)
 
 type Operation func(apply Applier, params []interface{}, data interface{}) (interface{}, error)
 
+// New creates a JSONLogic with standard operations.
 func New() *JSONLogic {
 	ret := NewEmpty()
 	// Data access.
@@ -56,6 +63,11 @@ func NewEmpty() *JSONLogic {
 	return &JSONLogic{
 		ops: make(map[string]Operation),
 	}
+}
+
+// Apply is equivalent to DefaultJSONLogic.Apply.
+func Apply(logic, data interface{}) (res interface{}, err error) {
+	return DefaultJSONLogic.Apply(logic, data)
 }
 
 // Apply data to logic and returns a result. Both logic/data must be one of 'encoding/json' supported types:
@@ -108,6 +120,12 @@ func (jl *JSONLogic) Apply(logic, data interface{}) (res interface{}, err error)
 	return opFn(jl.Apply, params, data)
 }
 
+// AddOperation is equivalent to DefaultJSONLogic.AddOperation.
+func AddOperation(name string, op Operation) {
+	DefaultJSONLogic.AddOperation(name, op)
+}
+
+// AddOperation adds a named operation to JSONLogic instance.
 func (jl *JSONLogic) AddOperation(name string, op Operation) {
 	jl.ops[name] = op
 }
