@@ -38,6 +38,15 @@ func New() *JSONLogic {
 	AddOpMinus(ret)
 	AddOpDiv(ret)
 	AddOpMod(ret)
+	// Array.
+	AddOpMap(ret)
+	AddOpFilter(ret)
+	AddOpReduce(ret)
+	AddOpAll(ret)
+	AddOpNone(ret)
+	AddOpSome(ret)
+	AddOpMerge(ret)
+	AddOpIn(ret)
 	return ret
 }
 
