@@ -35,6 +35,9 @@ func New() *JSONLogic {
 	AddOpMax(ret)
 	AddOpAdd(ret)
 	AddOpMul(ret)
+	AddOpMinus(ret)
+	AddOpDiv(ret)
+	AddOpMod(ret)
 	return ret
 }
 

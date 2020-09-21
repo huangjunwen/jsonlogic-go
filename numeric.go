@@ -2,6 +2,7 @@ package jsonlogic
 
 import (
 	"fmt"
+	"math"
 )
 
 // AddOpLessThan adds "<" operation to the JSONLogic instance. Param restriction:
@@ -125,6 +126,9 @@ func opAdd(apply Applier, params []interface{}, data interface{}) (res interface
 		}
 		sum += n
 	}
+	if math.IsInf(sum, 0) {
+		return nil, fmt.Errorf("+: got -Inf/+Inf result")
+	}
 	return sum, nil
 }
 
@@ -152,5 +156,111 @@ func opMul(apply Applier, params []interface{}, data interface{}) (res interface
 		}
 		prod *= n
 	}
+	if math.IsInf(prod, 0) {
+		return nil, fmt.Errorf("*: got -Inf/+Inf result")
+	}
 	return prod, nil
+}
+
+// AddOpMinus adds "-" operation to the JSONLogic instance. Param restriction:
+//   - At least one param.
+//   - Must be evaluated to json primitives that can convert to numeric.
+func AddOpMinus(jl *JSONLogic) {
+	jl.AddOperation("-", opMinus)
+}
+
+func opMinus(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	switch len(params) {
+	case 0:
+		return nil, fmt.Errorf("-: expect at least one param")
+	case 1:
+		r, err := apply(params[0], data)
+		if err != nil {
+			return nil, err
+		}
+
+		n, err := toNumeric(r)
+		if err != nil {
+			return nil, err
+		}
+		return -n, nil
+	default:
+		params, err := applyParams(apply, params, data)
+		if err != nil {
+			return nil, err
+		}
+		left, err := toNumeric(params[0])
+		if err != nil {
+			return nil, err
+		}
+		right, err := toNumeric(params[1])
+		if err != nil {
+			return nil, err
+		}
+		r := left - right
+		if math.IsInf(r, 0) {
+			return nil, fmt.Errorf("-: got -Inf/+Inf result")
+		}
+		return r, nil
+	}
+}
+
+// AddOpDiv adds "/" operation to the JSONLogic instance. Param restriction:
+//   - At least two params.
+//   - Must be evaluated to json primitives that can convert to numeric.
+func AddOpDiv(jl *JSONLogic) {
+	jl.AddOperation("/", opDiv)
+}
+
+func opDiv(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) < 2 {
+		return nil, fmt.Errorf("/: expect at least two params")
+	}
+	params, err = applyParams(apply, params, data)
+	if err != nil {
+		return
+	}
+	left, err := toNumeric(params[0])
+	if err != nil {
+		return nil, err
+	}
+	right, err := toNumeric(params[1])
+	if err != nil {
+		return nil, err
+	}
+	r := left / right
+	if math.IsInf(r, 0) {
+		return nil, fmt.Errorf("/: got -Inf/+Inf result")
+	}
+	return r, nil
+}
+
+// AddOpMod adds "%" operation to the JSONLogic instance. Param restriction:
+//   - At least two params.
+//   - Must be evaluated to json primitives that can convert to numeric.
+func AddOpMod(jl *JSONLogic) {
+	jl.AddOperation("%", opMod)
+}
+
+func opMod(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) < 2 {
+		return nil, fmt.Errorf("%%: expect at least two params")
+	}
+	params, err = applyParams(apply, params, data)
+	if err != nil {
+		return
+	}
+	left, err := toNumeric(params[0])
+	if err != nil {
+		return nil, err
+	}
+	right, err := toNumeric(params[1])
+	if err != nil {
+		return nil, err
+	}
+	r := math.Mod(left, right)
+	if math.IsNaN(r) {
+		return nil, fmt.Errorf("%%: got NaN result")
+	}
+	return r, nil
 }
