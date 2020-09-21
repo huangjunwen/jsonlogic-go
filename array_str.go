@@ -2,6 +2,7 @@ package jsonlogic
 
 import (
 	"fmt"
+	"strings"
 )
 
 // AddOpMap adds "map" operation to the JSONLogic instance. Param restriction:
@@ -241,7 +242,7 @@ func opMerge(apply Applier, params []interface{}, data interface{}) (res interfa
 }
 
 // AddOpIn adds "in" operation to the JSONLogic instance. Params restriction:
-//   - At least two params: the first to check and the second evaluated to an array.
+//   - At least two params: the first to check and the second evaluated to an array or string.
 //   - All items must be evaluated to json primitives.
 func AddOpIn(jl *JSONLogic) {
 	jl.AddOperation("in", opIn)
@@ -256,24 +257,117 @@ func opIn(apply Applier, params []interface{}, data interface{}) (res interface{
 		return
 	}
 
-	arr, ok := params[1].([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("in: expect array as the second param but got %T", params[1])
-	}
-
 	param0 := params[0]
 	if !isPrimitive(param0) {
-		return nil, fmt.Errorf("in: expect json primitive")
+		return nil, fmt.Errorf("in: expect json primitive as first param but got %T", param0)
 	}
 
-	for _, item := range arr {
-		if !isPrimitive(item) {
-			return nil, fmt.Errorf("in: expect json primitives")
+	switch param1 := params[1].(type) {
+	case []interface{}:
+		for _, item := range param1 {
+			if !isPrimitive(item) {
+				return nil, fmt.Errorf("in: expect json primitives in array but got %T", item)
+			}
+			if param0 == item {
+				return true, nil
+			}
 		}
-		if param0 == item {
-			return true, nil
+		return false, nil
+	case string:
+		s, err := toString(param0)
+		if err != nil {
+			return nil, err
+		}
+		return strings.Contains(param1, s), nil
+	default:
+		return nil, fmt.Errorf("in: expect array/string as the second param but got %T", params[1])
+	}
+
+}
+
+// AddOpCat adds "cat" operation to the JSONLogic instance. Params restriction:
+//   - All items must be evaluated to json primitives that can converted to string.
+func AddOpCat(jl *JSONLogic) {
+	jl.AddOperation("cat", opCat)
+}
+
+func opCat(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	params, err = applyParams(apply, params, data)
+	if err != nil {
+		return
+	}
+	parts := []string{}
+	for _, param := range params {
+		s, err := toString(param)
+		if err != nil {
+			return nil, err
+		}
+		parts = append(parts, s)
+	}
+	return strings.Join(parts, ""), nil
+}
+
+// AddOpSubstr adds "substr" operation to the JSONLogic instance. Params restriction:
+//   - Two to three params: the first evaluated to string, and the second/third to numbers.
+func AddOpSubstr(jl *JSONLogic) {
+	jl.AddOperation("substr", opSubstr)
+}
+
+func opSubstr(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
+	if len(params) < 2 {
+		return nil, fmt.Errorf("substr: expect at least two params")
+	}
+	params, err = applyParams(apply, params, data)
+	if err != nil {
+		return
+	}
+
+	s, err := toString(params[0])
+	if err != nil {
+		return nil, err
+	}
+	r := []rune(s)
+
+	var start int
+	{
+		param1, err := toNumeric(params[1])
+		if err != nil {
+			return nil, err
+		}
+		start = int(param1)
+		if start < 0 {
+			start += len(r)
+			if start < 0 {
+				start = 0
+			}
 		}
 	}
-	return false, nil
+
+	var (
+		end    int
+		hasEnd bool
+	)
+	if len(params) > 2 {
+		param2, err := toNumeric(params[2])
+		if err != nil {
+			return nil, err
+		}
+		end = int(param2)
+		hasEnd = true
+	}
+
+	if !hasEnd {
+		return string(r[start:]), nil
+	}
+
+	if end >= 0 {
+		return string(r[start : start+end]), nil
+	}
+
+	end += len(r)
+	if end < 0 {
+		end = 0
+	}
+	return string(r[start:end]), nil
 
 }

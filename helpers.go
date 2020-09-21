@@ -118,6 +118,35 @@ func toNumeric(obj interface{}) (f float64, err error) {
 	}
 }
 
+// toString converts json primitive to string. It should be the same as JavaScript's String(), except:
+//   - an error is returned if obj is not a json primitive.
+//   - obj is number NaN or +Inf/-Inf.
+func toString(obj interface{}) (string, error) {
+	switch o := obj.(type) {
+	case nil:
+		return "null", nil
+	case bool:
+		if o {
+			return "true", nil
+		}
+		return "false", nil
+	case float64:
+		if math.IsNaN(o) {
+			return "", fmt.Errorf("toString got NaN")
+		}
+		if math.IsInf(o, 0) {
+			return "", fmt.Errorf("toString got +Inf/-Inf")
+		}
+		return strconv.FormatFloat(o, 'f', -1, 64), nil
+	case string:
+		return o, nil
+	case []interface{}, map[string]interface{}:
+		return "", fmt.Errorf("toString not support type %T", obj)
+	default:
+		panic(fmt.Errorf("toString got non-json type %T", obj))
+	}
+}
+
 type compSymbol string
 
 // compare symbol can be "<"/"<="/">"/">="

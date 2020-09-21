@@ -1,6 +1,7 @@
 package jsonlogic
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -84,6 +85,12 @@ func TestToNumeric(t *testing.T) {
 		{Obj: "a", Err: true},
 		{Obj: []interface{}{1}, Err: true},
 		{Obj: map[string]interface{}{}, Err: true},
+		{Obj: math.NaN(), Err: true},
+		{Obj: math.Inf(1), Err: true},
+		{Obj: math.Inf(-1), Err: true},
+		{Obj: "nan", Err: true},
+		{Obj: "-inf", Err: true},
+		{Obj: "+inf", Err: true},
 	} {
 		n, err := toNumeric(testCase.Obj)
 		if testCase.Err {
@@ -91,6 +98,34 @@ func TestToNumeric(t *testing.T) {
 		} else {
 			assert.NoError(err, "test case %d", i)
 			assert.Equal(testCase.N, n, "test case %d", i)
+		}
+	}
+}
+func TestToString(t *testing.T) {
+	assert := assert.New(t)
+
+	for i, testCase := range []struct {
+		Obj interface{}
+		S   string
+		Err bool
+	}{
+		{Obj: nil, S: "null"},
+		{Obj: true, S: "true"},
+		{Obj: false, S: "false"},
+		{Obj: math.NaN(), Err: true},
+		{Obj: math.Inf(1), Err: true},
+		{Obj: math.Inf(-1), Err: true},
+		{Obj: 1.111, S: "1.111"},
+		{Obj: "xxx", S: "xxx"},
+		{Obj: []interface{}{1}, Err: true},
+		{Obj: map[string]interface{}{}, Err: true},
+	} {
+		s, err := toString(testCase.Obj)
+		if testCase.Err {
+			assert.Error(err, "test case %d", i)
+		} else {
+			assert.NoError(err, "test case %d", i)
+			assert.Equal(testCase.S, s, "test case %d", i)
 		}
 	}
 }

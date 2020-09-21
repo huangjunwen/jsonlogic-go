@@ -80,7 +80,42 @@ func TestOpIn(t *testing.T) {
 	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
 		// http://jsonlogic.com/operations.html#in
 		{Logic: `{"in":["Ringo",["John","Paul","George","Ringo"]]}`, Data: `null`, Result: true},
-		// 'in' uses strict equal.
+		// http://jsonlogic.com/operations.html#in-1
+		{Logic: `{"in":["Spring","Springfield"]}`, Data: `null`, Result: true},
+		// 'in' uses strict equal in array mode.
 		{Logic: `{"in":[1,["1"]]}`, Data: `null`, Result: false},
+		// 'in' convert to string in string mode.
+		{Logic: `{"in":[1,"1"]}`, Data: `null`, Result: true},
+		{Logic: `{"in":[null,"xnull"]}`, Data: `null`, Result: true},
+	})
+}
+
+func TestOpCat(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpVar(jl)
+	AddOpCat(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html#cat
+		{Logic: `{"cat":["I love"," pie"]}`, Data: `null`, Result: "I love pie"},
+		{Logic: `{"cat":["I love ",{"var":"filling"}," pie"]}`, Data: `{"filling":"apple","temp":110}`, Result: "I love apple pie"},
+		//
+		{Logic: `{"cat":[]}`, Data: `null`, Result: ""},
+		{Logic: `{"cat":[1,true,3.11,null]}`, Data: `null`, Result: "1true3.11null"},
+	})
+}
+
+func TestOpSubstr(t *testing.T) {
+	assert := assert.New(t)
+	jl := NewEmpty()
+	AddOpSubstr(jl)
+	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+		// http://jsonlogic.com/operations.html#substr
+		{Logic: `{"substr":["jsonlogic",4]}`, Data: `null`, Result: "logic"},
+		{Logic: `{"substr":["jsonlogic",-5]}`, Data: `null`, Result: "logic"},
+		{Logic: `{"substr":["jsonlogic",1,3]}`, Data: `null`, Result: "son"},
+		{Logic: `{"substr":["jsonlogic",4,-2]}`, Data: `null`, Result: "log"},
+		// Multi bytes chars.
+		{Logic: `{"substr":["大家好",1]}`, Data: `null`, Result: "家好"},
 	})
 }

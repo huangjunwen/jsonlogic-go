@@ -38,7 +38,7 @@ func New() *JSONLogic {
 	AddOpMinus(ret)
 	AddOpDiv(ret)
 	AddOpMod(ret)
-	// Array.
+	// Array and string.
 	AddOpMap(ret)
 	AddOpFilter(ret)
 	AddOpReduce(ret)
@@ -47,6 +47,8 @@ func New() *JSONLogic {
 	AddOpSome(ret)
 	AddOpMerge(ret)
 	AddOpIn(ret)
+	AddOpCat(ret)
+	AddOpSubstr(ret)
 	return ret
 }
 
