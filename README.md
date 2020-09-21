@@ -1,6 +1,6 @@
 ## jsonlogic-go
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/huangjunwen/jsonlogic-go)](https://goreportcard.com/report/github.com/huangjunwen/jsonlogic-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/huangjunwen/jsonlogic-go?)](https://goreportcard.com/report/github.com/huangjunwen/jsonlogic-go)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/huangjunwen/jsonlogic-go)](https://pkg.go.dev/github.com/huangjunwen/jsonlogic-go)
 
 A [jsonlogic](http://jsonlogic.com) library in golang. 
