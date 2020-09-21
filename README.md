@@ -17,5 +17,10 @@ then it is expected to be evaluated to the same result in client side. But the r
 - Many operations will check the type of params. Some examples:
   - Comparing and equality checking only accepts json primitves (`null/bool/numeric/string`)
     - You can still `{">":[1,"-1"]}` but not `{">":[1,[]]}`
-- No `NaN`: `{">":["b",0]}` is evaluated to `false` in js since `"b"` is converted to `NaN`. But here you will get an error since parse error.
-  - More detail about comparing in js: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than
+- No `NaN`/`+Inf`/`-Inf`:
+  - `{"/":[1,0]}` gets `null` in js but got an error in this library.
+
+
+### Reference
+
+- Comparing in js: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than

@@ -2,6 +2,7 @@ package jsonlogic
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -84,7 +85,20 @@ func toBool(obj interface{}) bool {
 // toNumeric converts json primitive to numeric. It should be the same as JavaScript's Number(), except:
 //   - an error is returned if obj is not a json primitive.
 //   - an error is returned if obj is string but not well-formed.
-func toNumeric(obj interface{}) (float64, error) {
+//   - the number is NaN or +Inf/-Inf.
+func toNumeric(obj interface{}) (f float64, err error) {
+	defer func() {
+		if err == nil {
+			if math.IsNaN(f) {
+				f = 0
+				err = fmt.Errorf("toNumeric got NaN")
+			} else if math.IsInf(f, 0) {
+				f = 0
+				err = fmt.Errorf("toNumeric got +Inf/-Inf")
+			}
+		}
+	}()
+
 	switch o := obj.(type) {
 	case nil:
 		return 0, nil
