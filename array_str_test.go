@@ -16,7 +16,7 @@ func TestOpMapFilterReduce(t *testing.T) {
 	AddOpMap(jl)
 	AddOpFilter(jl)
 	AddOpReduce(jl)
-	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+	TestCases{
 		// http://jsonlogic.com/operations.html#map-reduce-and-filter
 		{Logic: `{"map":[{"var":"integers"},{"*":[{"var":""},2]}]}`, Data: `{"integers":[1,2,3,4,5]}`, Result: []interface{}{float64(2), float64(4), float64(6), float64(8), float64(10)}},
 		{Logic: `{"filter":[{"var":"integers"},{"%":[{"var":""},2]}]}`, Data: `{"integers":[1,2,3,4,5]}`, Result: []interface{}{float64(1), float64(3), float64(5)}},
@@ -27,7 +27,7 @@ func TestOpMapFilterReduce(t *testing.T) {
 		{Logic: `{"filter":[[1,2]]}`, Data: `null`, Err: true},
 		{Logic: `{"filter":[1,{"var":""}]}`, Data: `null`, Result: []interface{}{}},
 		{Logic: `{"reduce":[[1,2],{"var":""}]}`, Data: `null`, Err: true},
-	})
+	}.Run(assert, jl)
 
 }
 
@@ -40,7 +40,7 @@ func TestOpAllNoneSome(t *testing.T) {
 	AddOpAll(jl)
 	AddOpNone(jl)
 	AddOpSome(jl)
-	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+	TestCases{
 		// http://jsonlogic.com/operations.html#map-reduce-and-filter
 		{Logic: `{"all":[[1,2,3],{">":[{"var":""},0]}]}`, Data: `null`, Result: true},
 		{Logic: `{"none":[[-3,-2,-1],{">":[{"var":""},0]}]}`, Data: `null`, Result: true},
@@ -53,7 +53,7 @@ func TestOpAllNoneSome(t *testing.T) {
 		{Logic: `{"none":[[],{">":[{"var":""},0]}]}`, Data: `null`, Result: true},
 		{Logic: `{"some":[[-1,0,-2],{">":[{"var":""},0]}]}`, Data: `null`, Result: false},
 		{Logic: `{"some":[[],{">":[{"var":""},0]}]}`, Data: `null`, Result: false},
-	})
+	}.Run(assert, jl)
 }
 
 func TestOpMerge(t *testing.T) {
@@ -63,21 +63,21 @@ func TestOpMerge(t *testing.T) {
 	AddOpIf(jl)
 	AddOpVar(jl)
 	AddOpMerge(jl)
-	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+	TestCases{
 		// http://jsonlogic.com/operations.html#merge
 		{Logic: `{"merge":[[1,2],[3,4]]}`, Data: `null`, Result: []interface{}{float64(1), float64(2), float64(3), float64(4)}},
 		{Logic: `{"missing":{"merge":["vin",{"if":[{"var":"financing"},["apr","term"],[]]}]}}`, Data: `{"financing":true}`, Result: []interface{}{"vin", "apr", "term"}},
 		{Logic: `{"missing":{"merge":["vin",{"if":[{"var":"financing"},["apr","term"],[]]}]}}`, Data: `{"financing":false}`, Result: []interface{}{"vin"}},
 		//
 		{Logic: `{"merge":[]}`, Data: `null`, Result: []interface{}{}},
-	})
+	}.Run(assert, jl)
 }
 
 func TestOpIn(t *testing.T) {
 	assert := assert.New(t)
 	jl := NewEmpty()
 	AddOpIn(jl)
-	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+	TestCases{
 		// http://jsonlogic.com/operations.html#in
 		{Logic: `{"in":["Ringo",["John","Paul","George","Ringo"]]}`, Data: `null`, Result: true},
 		// http://jsonlogic.com/operations.html#in-1
@@ -87,7 +87,7 @@ func TestOpIn(t *testing.T) {
 		// 'in' convert to string in string mode.
 		{Logic: `{"in":[1,"1"]}`, Data: `null`, Result: true},
 		{Logic: `{"in":[null,"xnull"]}`, Data: `null`, Result: true},
-	})
+	}.Run(assert, jl)
 }
 
 func TestOpCat(t *testing.T) {
@@ -95,21 +95,21 @@ func TestOpCat(t *testing.T) {
 	jl := NewEmpty()
 	AddOpVar(jl)
 	AddOpCat(jl)
-	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+	TestCases{
 		// http://jsonlogic.com/operations.html#cat
 		{Logic: `{"cat":["I love"," pie"]}`, Data: `null`, Result: "I love pie"},
 		{Logic: `{"cat":["I love ",{"var":"filling"}," pie"]}`, Data: `{"filling":"apple","temp":110}`, Result: "I love apple pie"},
 		//
 		{Logic: `{"cat":[]}`, Data: `null`, Result: ""},
 		{Logic: `{"cat":[1,true,3.11,null]}`, Data: `null`, Result: "1true3.11null"},
-	})
+	}.Run(assert, jl)
 }
 
 func TestOpSubstr(t *testing.T) {
 	assert := assert.New(t)
 	jl := NewEmpty()
 	AddOpSubstr(jl)
-	runJSONLogicTestCases(assert, jl, []jsonLogicTestCase{
+	TestCases{
 		// http://jsonlogic.com/operations.html#substr
 		{Logic: `{"substr":["jsonlogic",4]}`, Data: `null`, Result: "logic"},
 		{Logic: `{"substr":["jsonlogic",-5]}`, Data: `null`, Result: "logic"},
@@ -117,5 +117,5 @@ func TestOpSubstr(t *testing.T) {
 		{Logic: `{"substr":["jsonlogic",4,-2]}`, Data: `null`, Result: "log"},
 		// Multi bytes chars.
 		{Logic: `{"substr":["大家好",1]}`, Data: `null`, Result: "家好"},
-	})
+	}.Run(assert, jl)
 }
