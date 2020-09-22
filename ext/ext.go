@@ -1,3 +1,4 @@
+// Package ext contains some useful extension operations.
 package ext
 
 import (
