@@ -40,7 +40,7 @@ func opStrictEqual(apply Applier, params []interface{}, data interface{}) (res i
 	if len(params) < 2 {
 		return nil, fmt.Errorf("===/!==: expect at least two params")
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}

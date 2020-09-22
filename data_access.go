@@ -17,7 +17,7 @@ func opVar(apply Applier, params []interface{}, data interface{}) (res interface
 	if len(params) < 1 {
 		return nil, fmt.Errorf("var: expect at least one param")
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
@@ -90,7 +90,7 @@ func opMissing(apply Applier, params []interface{}, data interface{}) (res inter
 	if len(params) == 0 {
 		return []interface{}{}, nil
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
@@ -125,7 +125,7 @@ func opMissingSome(apply Applier, params []interface{}, data interface{}) (res i
 	if len(params) != 2 {
 		return nil, fmt.Errorf("missing_some: expect 2 params")
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}

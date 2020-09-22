@@ -225,7 +225,7 @@ func AddOpMerge(jl *JSONLogic) {
 }
 
 func opMerge(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
@@ -252,7 +252,7 @@ func opIn(apply Applier, params []interface{}, data interface{}) (res interface{
 	if len(params) < 2 {
 		return nil, fmt.Errorf("in: expect at least two params")
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
@@ -292,7 +292,7 @@ func AddOpCat(jl *JSONLogic) {
 }
 
 func opCat(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
@@ -317,7 +317,7 @@ func opSubstr(apply Applier, params []interface{}, data interface{}) (res interf
 	if len(params) < 2 {
 		return nil, fmt.Errorf("substr: expect at least two params")
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}

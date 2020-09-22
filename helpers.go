@@ -217,7 +217,8 @@ func compareValues(symbol compSymbol, left, right interface{}) (bool, error) {
 
 }
 
-func applyParams(apply Applier, params []interface{}, data interface{}) ([]interface{}, error) {
+// ApplyParams apply data to an array of params. Useful in operation implementation.
+func ApplyParams(apply Applier, params []interface{}, data interface{}) ([]interface{}, error) {
 	r, err := apply(params, data)
 	if err != nil {
 		return nil, err

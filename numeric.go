@@ -35,7 +35,7 @@ func opCompare(symbol compSymbol) Operation {
 		if len(params) < 2 {
 			return nil, fmt.Errorf("%s: expect at least two params", symbol)
 		}
-		params, err = applyParams(apply, params, data)
+		params, err = ApplyParams(apply, params, data)
 		if err != nil {
 			return
 		}
@@ -185,7 +185,7 @@ func opMinus(apply Applier, params []interface{}, data interface{}) (res interfa
 		}
 		return -n, nil
 	default:
-		params, err := applyParams(apply, params, data)
+		params, err := ApplyParams(apply, params, data)
 		if err != nil {
 			return nil, err
 		}
@@ -216,7 +216,7 @@ func opDiv(apply Applier, params []interface{}, data interface{}) (res interface
 	if len(params) < 2 {
 		return nil, fmt.Errorf("/: expect at least two params")
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
@@ -246,7 +246,7 @@ func opMod(apply Applier, params []interface{}, data interface{}) (res interface
 	if len(params) < 2 {
 		return nil, fmt.Errorf("%%: expect at least two params")
 	}
-	params, err = applyParams(apply, params, data)
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
