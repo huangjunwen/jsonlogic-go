@@ -7,11 +7,17 @@ import (
 	"os"
 
 	"github.com/huangjunwen/jsonlogic-go"
+	"github.com/huangjunwen/jsonlogic-go/ext"
 )
 
 func outputErrorAndExit(err error) {
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
+}
+
+func init() {
+	// Add extensions.
+	ext.AddOpRange(jsonlogic.DefaultJSONLogic)
 }
 
 func main() {
@@ -30,7 +36,7 @@ func main() {
 		}
 	}
 
-	result, err := jsonlogic.New().Apply(logic, data)
+	result, err := jsonlogic.Apply(logic, data)
 	if err != nil {
 		outputErrorAndExit(err)
 		return
