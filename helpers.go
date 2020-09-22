@@ -38,8 +38,8 @@ func getLogic(obj interface{}) (op string, params []interface{}) {
 	panic(fmt.Errorf("no operator in logic"))
 }
 
-// isPrimitive returns true if obj is json primitive.
-func isPrimitive(obj interface{}) bool {
+// IsPrimitive returns true if obj is json primitive (null/bool/float64/string).
+func IsPrimitive(obj interface{}) bool {
 	switch obj.(type) {
 	case nil:
 		return true
@@ -54,15 +54,15 @@ func isPrimitive(obj interface{}) bool {
 	case map[string]interface{}:
 		return false
 	default:
-		panic(fmt.Errorf("isPrimitive not support type %T", obj))
+		panic(fmt.Errorf("IsPrimitive not support type %T", obj))
 	}
 }
 
-// toBool returns the truthy of a json object.
+// ToBool returns the truthy of a json object.
 // ref:
 //   - http://jsonlogic.com/truthy.html
 //   - json-logic-js/logic.js::truthy
-func toBool(obj interface{}) bool {
+func ToBool(obj interface{}) bool {
 	switch o := obj.(type) {
 	case nil:
 		return false
@@ -78,23 +78,23 @@ func toBool(obj interface{}) bool {
 		// Always true
 		return true
 	default:
-		panic(fmt.Errorf("toBool got non-json type %T", obj))
+		panic(fmt.Errorf("ToBool got non-json type %T", obj))
 	}
 }
 
-// toNumeric converts json primitive to numeric. It should be the same as JavaScript's Number(), except:
+// ToNumeric converts json primitive to numeric. It should be the same as JavaScript's Number(), except:
 //   - an error is returned if obj is not a json primitive.
 //   - an error is returned if obj is string but not well-formed.
 //   - the number is NaN or +Inf/-Inf.
-func toNumeric(obj interface{}) (f float64, err error) {
+func ToNumeric(obj interface{}) (f float64, err error) {
 	defer func() {
 		if err == nil {
 			if math.IsNaN(f) {
 				f = 0
-				err = fmt.Errorf("toNumeric got NaN")
+				err = fmt.Errorf("ToNumeric got NaN")
 			} else if math.IsInf(f, 0) {
 				f = 0
-				err = fmt.Errorf("toNumeric got +Inf/-Inf")
+				err = fmt.Errorf("ToNumeric got +Inf/-Inf")
 			}
 		}
 	}()
@@ -112,16 +112,16 @@ func toNumeric(obj interface{}) (f float64, err error) {
 	case string:
 		return strconv.ParseFloat(o, 64)
 	case []interface{}, map[string]interface{}:
-		return 0, fmt.Errorf("toNumeric not support type %T", obj)
+		return 0, fmt.Errorf("ToNumeric not support type %T", obj)
 	default:
-		panic(fmt.Errorf("toNumeric got non-json type %T", obj))
+		panic(fmt.Errorf("ToNumeric got non-json type %T", obj))
 	}
 }
 
-// toString converts json primitive to string. It should be the same as JavaScript's String(), except:
+// ToString converts json primitive to string. It should be the same as JavaScript's String(), except:
 //   - an error is returned if obj is not a json primitive.
 //   - obj is number NaN or +Inf/-Inf.
-func toString(obj interface{}) (string, error) {
+func ToString(obj interface{}) (string, error) {
 	switch o := obj.(type) {
 	case nil:
 		return "null", nil
@@ -132,34 +132,36 @@ func toString(obj interface{}) (string, error) {
 		return "false", nil
 	case float64:
 		if math.IsNaN(o) {
-			return "", fmt.Errorf("toString got NaN")
+			return "", fmt.Errorf("ToString got NaN")
 		}
 		if math.IsInf(o, 0) {
-			return "", fmt.Errorf("toString got +Inf/-Inf")
+			return "", fmt.Errorf("ToString got +Inf/-Inf")
 		}
 		return strconv.FormatFloat(o, 'f', -1, 64), nil
 	case string:
 		return o, nil
 	case []interface{}, map[string]interface{}:
-		return "", fmt.Errorf("toString not support type %T", obj)
+		return "", fmt.Errorf("ToString not support type %T", obj)
 	default:
-		panic(fmt.Errorf("toString got non-json type %T", obj))
+		panic(fmt.Errorf("ToString got non-json type %T", obj))
 	}
 }
 
-type compSymbol string
+// CompSymbol represents compare operator.
+type CompSymbol string
 
-// compare symbol can be "<"/"<="/">"/">="
 const (
-	lt compSymbol = "<"
-	le compSymbol = "<="
-	gt compSymbol = ">"
-	ge compSymbol = ">="
+	LT CompSymbol = "<"
+	LE CompSymbol = "<="
+	GT CompSymbol = ">"
+	GE CompSymbol = ">="
+	EQ CompSymbol = "==="
+	NE CompSymbol = "!=="
 )
 
-// compareValues compares json primitives. It should be the same as JavaScript's "<"/"<="/">"/">=", except:
+// CompareValues compares json primitives. It should be the same as JavaScript's "<"/"<="/">"/">="/"==="/"!==", except:
 //   - an error is returned if any value is not a json primitive.
-//   - any error retuend by toNumeric.
+//   - any error retuend by ToNumeric.
 //
 // ref:
 //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than
@@ -172,44 +174,51 @@ const (
 //     >   Strings are converted based on the values they contain, and are converted as NaN if they do not contain numeric values.
 //     > If either value is NaN, the operator returns false.
 //     > Otherwise the values are compared as numeric values.
-func compareValues(symbol compSymbol, left, right interface{}) (bool, error) {
-	if !isPrimitive(left) || !isPrimitive(right) {
+func CompareValues(symbol CompSymbol, left, right interface{}) (bool, error) {
+	if !IsPrimitive(left) || !IsPrimitive(right) {
 		return false, fmt.Errorf("only primitive values can be compared")
 	}
+	switch symbol {
+	case EQ:
+		return left == right, nil
+	case NE:
+		return left != right, nil
+	}
+
 	leftStr, leftIsStr := left.(string)
 	rightStr, rightIsStr := right.(string)
 	if leftIsStr && rightIsStr {
 		switch symbol {
-		case lt:
+		case LT:
 			return leftStr < rightStr, nil
-		case le:
+		case LE:
 			return leftStr <= rightStr, nil
-		case gt:
+		case GT:
 			return leftStr > rightStr, nil
-		case ge:
+		case GE:
 			return leftStr >= rightStr, nil
 		default:
 			panic(fmt.Errorf("Impossible branch"))
 		}
 	}
 
-	leftNum, err := toNumeric(left)
+	leftNum, err := ToNumeric(left)
 	if err != nil {
 		return false, err
 	}
 
-	rightNum, err := toNumeric(right)
+	rightNum, err := ToNumeric(right)
 	if err != nil {
 		return false, err
 	}
 	switch symbol {
-	case lt:
+	case LT:
 		return leftNum < rightNum, nil
-	case le:
+	case LE:
 		return leftNum <= rightNum, nil
-	case gt:
+	case GT:
 		return leftNum > rightNum, nil
-	case ge:
+	case GE:
 		return leftNum >= rightNum, nil
 	default:
 		panic(fmt.Errorf("Impossible branch"))

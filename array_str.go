@@ -65,7 +65,7 @@ func opFilter(apply Applier, params []interface{}, data interface{}) (res interf
 		if err != nil {
 			return nil, err
 		}
-		if toBool(r) {
+		if ToBool(r) {
 			filteredArr = append(filteredArr, item)
 		}
 	}
@@ -138,7 +138,7 @@ func opAll(apply Applier, params []interface{}, data interface{}) (res interface
 		if err != nil {
 			return nil, err
 		}
-		if !toBool(r) {
+		if !ToBool(r) {
 			return false, nil
 		}
 	}
@@ -175,7 +175,7 @@ func opNone(apply Applier, params []interface{}, data interface{}) (res interfac
 		if err != nil {
 			return nil, err
 		}
-		if toBool(r) {
+		if ToBool(r) {
 			return false, nil
 		}
 	}
@@ -212,7 +212,7 @@ func opSome(apply Applier, params []interface{}, data interface{}) (res interfac
 		if err != nil {
 			return nil, err
 		}
-		if toBool(r) {
+		if ToBool(r) {
 			return true, nil
 		}
 	}
@@ -258,14 +258,14 @@ func opIn(apply Applier, params []interface{}, data interface{}) (res interface{
 	}
 
 	param0 := params[0]
-	if !isPrimitive(param0) {
+	if !IsPrimitive(param0) {
 		return nil, fmt.Errorf("in: expect json primitive as first param but got %T", param0)
 	}
 
 	switch param1 := params[1].(type) {
 	case []interface{}:
 		for _, item := range param1 {
-			if !isPrimitive(item) {
+			if !IsPrimitive(item) {
 				return nil, fmt.Errorf("in: expect json primitives in array but got %T", item)
 			}
 			if param0 == item {
@@ -274,7 +274,7 @@ func opIn(apply Applier, params []interface{}, data interface{}) (res interface{
 		}
 		return false, nil
 	case string:
-		s, err := toString(param0)
+		s, err := ToString(param0)
 		if err != nil {
 			return nil, err
 		}
@@ -298,7 +298,7 @@ func opCat(apply Applier, params []interface{}, data interface{}) (res interface
 	}
 	parts := []string{}
 	for _, param := range params {
-		s, err := toString(param)
+		s, err := ToString(param)
 		if err != nil {
 			return nil, err
 		}
@@ -322,7 +322,7 @@ func opSubstr(apply Applier, params []interface{}, data interface{}) (res interf
 		return
 	}
 
-	s, err := toString(params[0])
+	s, err := ToString(params[0])
 	if err != nil {
 		return nil, err
 	}
@@ -330,7 +330,7 @@ func opSubstr(apply Applier, params []interface{}, data interface{}) (res interf
 
 	var start int
 	{
-		param1, err := toNumeric(params[1])
+		param1, err := ToNumeric(params[1])
 		if err != nil {
 			return nil, err
 		}
@@ -348,7 +348,7 @@ func opSubstr(apply Applier, params []interface{}, data interface{}) (res interf
 		hasEnd bool
 	)
 	if len(params) > 2 {
-		param2, err := toNumeric(params[2])
+		param2, err := ToNumeric(params[2])
 		if err != nil {
 			return nil, err
 		}

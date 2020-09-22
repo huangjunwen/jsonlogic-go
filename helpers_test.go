@@ -65,7 +65,7 @@ func TestToBool(t *testing.T) {
 		{Obj: map[string]interface{}{}, IsTrue: true},
 		{Obj: map[string]interface{}{"var": "x"}, IsTrue: true},
 	} {
-		assert.Equal(testCase.IsTrue, toBool(testCase.Obj), "test case %d", i)
+		assert.Equal(testCase.IsTrue, ToBool(testCase.Obj), "test case %d", i)
 	}
 }
 
@@ -92,7 +92,7 @@ func TestToNumeric(t *testing.T) {
 		{Obj: "-inf", Err: true},
 		{Obj: "+inf", Err: true},
 	} {
-		n, err := toNumeric(testCase.Obj)
+		n, err := ToNumeric(testCase.Obj)
 		if testCase.Err {
 			assert.Error(err, "test case %d", i)
 		} else {
@@ -101,6 +101,7 @@ func TestToNumeric(t *testing.T) {
 		}
 	}
 }
+
 func TestToString(t *testing.T) {
 	assert := assert.New(t)
 
@@ -120,7 +121,7 @@ func TestToString(t *testing.T) {
 		{Obj: []interface{}{1}, Err: true},
 		{Obj: map[string]interface{}{}, Err: true},
 	} {
-		s, err := toString(testCase.Obj)
+		s, err := ToString(testCase.Obj)
 		if testCase.Err {
 			assert.Error(err, "test case %d", i)
 		} else {
@@ -134,19 +135,21 @@ func TestCompareValues(t *testing.T) {
 	assert := assert.New(t)
 
 	for i, testCase := range []struct {
-		Symbol compSymbol
+		Symbol CompSymbol
 		Left   interface{}
 		Right  interface{}
 		Result bool
 		Err    bool
 	}{
-		{Symbol: lt, Left: "1", Right: "a", Result: true},          // This is compared as strings.
-		{Symbol: lt, Left: "1", Right: float64(1.1), Result: true}, // This is compared as numerics.
-		{Symbol: lt, Left: float64(1), Right: "a", Err: true},
-		{Symbol: lt, Left: "a", Right: float64(1), Err: true},
-		{Symbol: lt, Left: []interface{}{}, Right: float64(1), Err: true},
+		{Symbol: LT, Left: "1", Right: "a", Result: true},          // This is compared as strings.
+		{Symbol: LT, Left: "1", Right: float64(1.1), Result: true}, // This is compared as numerics.
+		{Symbol: LT, Left: float64(1), Right: "a", Err: true},
+		{Symbol: LT, Left: "a", Right: float64(1), Err: true},
+		{Symbol: LT, Left: []interface{}{}, Right: float64(1), Err: true},
+		{Symbol: EQ, Left: float64(3), Right: float64(3), Result: true},
+		{Symbol: EQ, Left: float64(3), Right: "3", Result: false},
 	} {
-		result, err := compareValues(testCase.Symbol, testCase.Left, testCase.Right)
+		result, err := CompareValues(testCase.Symbol, testCase.Left, testCase.Right)
 		if testCase.Err {
 			assert.Error(err, "test case %d", i)
 		} else {

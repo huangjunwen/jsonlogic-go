@@ -17,7 +17,7 @@ func opIf(apply Applier, params []interface{}, data interface{}) (res interface{
 		if err != nil {
 			return nil, err
 		}
-		if toBool(r) {
+		if ToBool(r) {
 			return apply(params[i+1], data)
 		}
 	}
@@ -38,17 +38,14 @@ func AddOpStrictEqual(jl *JSONLogic) {
 
 func opStrictEqual(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
 	if len(params) < 2 {
-		return nil, fmt.Errorf("===/!==: expect at least two params")
+		return nil, fmt.Errorf("===: expect at least two params")
 	}
 	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
 
-	if !isPrimitive(params[0]) || !isPrimitive(params[1]) {
-		return nil, fmt.Errorf("===/!==: params must be json primitives")
-	}
-	return params[0] == params[1], nil
+	return CompareValues(EQ, params[0], params[1])
 }
 
 // AddOpStrictNotEqual adds "!==" operation to the JSONLogic instance. Param restriction: the same as "===".
@@ -57,11 +54,15 @@ func AddOpStrictNotEqual(jl *JSONLogic) {
 }
 
 func opStrictNotEqual(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
-	r, err := opStrictEqual(apply, params, data)
+	if len(params) < 2 {
+		return nil, fmt.Errorf("!==: expect at least two params")
+	}
+	params, err = ApplyParams(apply, params, data)
 	if err != nil {
 		return
 	}
-	return !r.(bool), nil
+
+	return CompareValues(NE, params[0], params[1])
 }
 
 // AddOpNegative adds "!" operation to the JSONLogic instance. Param restriction:
@@ -78,7 +79,7 @@ func opNegative(apply Applier, params []interface{}, data interface{}) (res inte
 	if err != nil {
 		return
 	}
-	return !toBool(res), nil
+	return !ToBool(res), nil
 }
 
 // AddOpDoubleNegative adds "!!" operation to the JSONLogic instance. Param Restriction: the same as "!".
@@ -109,7 +110,7 @@ func opAnd(apply Applier, params []interface{}, data interface{}) (res interface
 		if err != nil {
 			return
 		}
-		if !toBool(res) {
+		if !ToBool(res) {
 			return res, nil
 		}
 	}
@@ -131,7 +132,7 @@ func opOr(apply Applier, params []interface{}, data interface{}) (res interface{
 		if err != nil {
 			return
 		}
-		if toBool(res) {
+		if ToBool(res) {
 			return res, nil
 		}
 	}

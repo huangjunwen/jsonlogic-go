@@ -8,29 +8,29 @@ import (
 // AddOpLessThan adds "<" operation to the JSONLogic instance. Param restriction:
 //   - At least two params.
 //   - Must be evaluated to json primitives.
-//   - If comparing numerics, then params must be able to convert to numeric. (See toNumeric)
+//   - If comparing numerics, then params must be able to convert to numeric. (See ToNumeric)
 func AddOpLessThan(jl *JSONLogic) {
-	jl.AddOperation(string(lt), opCompare(lt))
+	jl.AddOperation(string(LT), opCompare(LT))
 }
 
 // AddOpLessEqual adds "<=" operation to the JSONLogic instance. Param restriction: the same as "<".
 func AddOpLessEqual(jl *JSONLogic) {
-	jl.AddOperation(string(le), opCompare(le))
+	jl.AddOperation(string(LE), opCompare(LE))
 }
 
 // AddOpGreaterThan adds ">" operation to the JSONLogic instance. Param restriction: the same as "<".
 func AddOpGreaterThan(jl *JSONLogic) {
-	jl.AddOperation(string(gt), opCompare(gt))
+	jl.AddOperation(string(GT), opCompare(GT))
 }
 
 // AddOpGreaterEqual adds ">=" operation to the JSONLogic instance. Param restriction: the same as "<".
 func AddOpGreaterEqual(jl *JSONLogic) {
-	jl.AddOperation(string(ge), opCompare(ge))
+	jl.AddOperation(string(GE), opCompare(GE))
 }
 
 // ref:
 //   - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Less_than
-func opCompare(symbol compSymbol) Operation {
+func opCompare(symbol CompSymbol) Operation {
 	return func(apply Applier, params []interface{}, data interface{}) (res interface{}, err error) {
 		if len(params) < 2 {
 			return nil, fmt.Errorf("%s: expect at least two params", symbol)
@@ -40,14 +40,14 @@ func opCompare(symbol compSymbol) Operation {
 			return
 		}
 
-		r0, err := compareValues(symbol, params[0], params[1])
+		r0, err := CompareValues(symbol, params[0], params[1])
 		if err != nil {
 			return nil, fmt.Errorf("%s: %s", symbol, err.Error())
 		}
 
 		var r1 = true
 		if len(params) > 2 {
-			r1, err = compareValues(symbol, params[1], params[2])
+			r1, err = CompareValues(symbol, params[1], params[2])
 			if err != nil {
 				return nil, fmt.Errorf("%s: %s", symbol, err.Error())
 			}
@@ -70,7 +70,7 @@ func opMin(apply Applier, params []interface{}, data interface{}) (res interface
 			return nil, err
 		}
 
-		n, err := toNumeric(r)
+		n, err := ToNumeric(r)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +94,7 @@ func opMax(apply Applier, params []interface{}, data interface{}) (res interface
 			return nil, err
 		}
 
-		n, err := toNumeric(r)
+		n, err := ToNumeric(r)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +120,7 @@ func opAdd(apply Applier, params []interface{}, data interface{}) (res interface
 			return nil, err
 		}
 
-		n, err := toNumeric(r)
+		n, err := ToNumeric(r)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +150,7 @@ func opMul(apply Applier, params []interface{}, data interface{}) (res interface
 			return nil, err
 		}
 
-		n, err := toNumeric(r)
+		n, err := ToNumeric(r)
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +179,7 @@ func opMinus(apply Applier, params []interface{}, data interface{}) (res interfa
 			return nil, err
 		}
 
-		n, err := toNumeric(r)
+		n, err := ToNumeric(r)
 		if err != nil {
 			return nil, err
 		}
@@ -189,11 +189,11 @@ func opMinus(apply Applier, params []interface{}, data interface{}) (res interfa
 		if err != nil {
 			return nil, err
 		}
-		left, err := toNumeric(params[0])
+		left, err := ToNumeric(params[0])
 		if err != nil {
 			return nil, err
 		}
-		right, err := toNumeric(params[1])
+		right, err := ToNumeric(params[1])
 		if err != nil {
 			return nil, err
 		}
@@ -220,11 +220,11 @@ func opDiv(apply Applier, params []interface{}, data interface{}) (res interface
 	if err != nil {
 		return
 	}
-	left, err := toNumeric(params[0])
+	left, err := ToNumeric(params[0])
 	if err != nil {
 		return nil, err
 	}
-	right, err := toNumeric(params[1])
+	right, err := ToNumeric(params[1])
 	if err != nil {
 		return nil, err
 	}
@@ -250,11 +250,11 @@ func opMod(apply Applier, params []interface{}, data interface{}) (res interface
 	if err != nil {
 		return
 	}
-	left, err := toNumeric(params[0])
+	left, err := ToNumeric(params[0])
 	if err != nil {
 		return nil, err
 	}
-	right, err := toNumeric(params[1])
+	right, err := ToNumeric(params[1])
 	if err != nil {
 		return nil, err
 	}
