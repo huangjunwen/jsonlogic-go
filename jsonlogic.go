@@ -129,3 +129,19 @@ func AddOperation(name string, op Operation) {
 func (jl *JSONLogic) AddOperation(name string, op Operation) {
 	jl.ops[name] = op
 }
+
+// Clone is equivalent to DefaultJSONLogic.Clone.
+func Clone() *JSONLogic {
+	return DefaultJSONLogic.Clone()
+}
+
+// Clone clones a JSONLogic instance.
+func (jl *JSONLogic) Clone() *JSONLogic {
+	ret := &JSONLogic{
+		ops: make(map[string]Operation),
+	}
+	for k, v := range jl.ops {
+		ret.ops[k] = v
+	}
+	return ret
+}
