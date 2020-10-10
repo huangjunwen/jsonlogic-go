@@ -11,14 +11,23 @@ var (
 
 // JSONLogic is an evaluator of json logic with a set of operations.
 type JSONLogic struct {
-	ops map[string]Operation
+	parent *JSONLogic
+	ops    map[string]Operation
 }
 
 type Applier func(logic, data interface{}) (res interface{}, err error)
 
 type Operation func(apply Applier, params []interface{}, data interface{}) (interface{}, error)
 
-// New creates a JSONLogic with standard operations.
+// NewInherit creates a child JSONLogic instance.
+func NewInherit(parent *JSONLogic) *JSONLogic {
+	return &JSONLogic{
+		parent: parent,
+		ops:    make(map[string]Operation),
+	}
+}
+
+// New creates a root (no parent) JSONLogic with standard operations.
 func New() *JSONLogic {
 	ret := NewEmpty()
 	// Data access.
@@ -59,6 +68,7 @@ func New() *JSONLogic {
 	return ret
 }
 
+// NewEmpty creates a root (no parent) JSONLogic with no operation.
 func NewEmpty() *JSONLogic {
 	return &JSONLogic{
 		ops: make(map[string]Operation),
@@ -112,7 +122,14 @@ func (jl *JSONLogic) Apply(logic, data interface{}) (res interface{}, err error)
 		}
 	}()
 
-	opFn := jl.ops[op]
+	var opFn Operation
+	for inst := jl; inst != nil; inst = inst.parent {
+		var ok bool
+		opFn, ok = inst.ops[op]
+		if ok {
+			break
+		}
+	}
 	if opFn == nil {
 		return nil, fmt.Errorf("Apply: operator %q not found", op)
 	}
@@ -126,6 +143,7 @@ func AddOperation(name string, op Operation) {
 }
 
 // AddOperation adds a named operation to JSONLogic instance.
+// Can override parent's same name operation.
 func (jl *JSONLogic) AddOperation(name string, op Operation) {
 	jl.ops[name] = op
 }
@@ -138,7 +156,8 @@ func Clone() *JSONLogic {
 // Clone clones a JSONLogic instance.
 func (jl *JSONLogic) Clone() *JSONLogic {
 	ret := &JSONLogic{
-		ops: make(map[string]Operation),
+		parent: jl.parent,
+		ops:    make(map[string]Operation),
 	}
 	for k, v := range jl.ops {
 		ret.ops[k] = v
